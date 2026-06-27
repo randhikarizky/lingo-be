@@ -2,6 +2,7 @@ import { z } from "zod";
 import { prisma } from "@/global/database/prisma";
 import { requireAuth } from "@/global/middleware/auth.guard";
 import { learningEngineService } from "@/features/learning/application/learning-engine.service";
+import { goalEvaluatorService } from "@/features/learning/application/goal-evaluator.service";
 import { getCharacterDisplayName } from "@/features/learning/domain/constants/tutors";
 import { getScenario } from "@/features/learning/domain/constants/scenarios";
 import { errorResponse, successResponse } from "@/global/utils/response";
@@ -48,6 +49,8 @@ export async function createConversationHandler(request: Request) {
     const displayName = getCharacterDisplayName(characterId);
     const defaultTitle = `${scenario.label} with ${displayName}`;
 
+    const sessionGoals = goalEvaluatorService.buildGoals(difficulty);
+
     const conversation = await prisma.conversation.create({
       data: {
         userId: auth.userId,
@@ -59,6 +62,7 @@ export async function createConversationHandler(request: Request) {
         objective: resolvedObjective,
         title: title || defaultTitle,
         status: "ACTIVE",
+        sessionGoals,
       },
     });
 
@@ -68,6 +72,7 @@ export async function createConversationHandler(request: Request) {
         scenarioType,
         difficulty,
         objective: resolvedObjective,
+        sessionGoals,
       })
     );
   } catch (error) {
