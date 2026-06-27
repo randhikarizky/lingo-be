@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { kieAiClient } from "@/global/ai/kie-ai.client";
+import { learningEngineService } from "@/features/learning/application/learning-engine.service";
 import { requireAuth } from "@/global/middleware/auth.guard";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
@@ -44,6 +45,10 @@ export async function chatHandler(request: Request) {
     const { conversationId, messages, model } = parsed.data;
     const userMessages = messages.filter((m) => m.role === "user");
     const lastUserMessage = userMessages[userMessages.length - 1];
+    const conversationMessages = messages.filter((m) => m.role !== "system");
+
+    let resolvedModel = model;
+    let aiMessages = messages;
 
     if (conversationId) {
       const conversation = await prisma.conversation.findUnique({
@@ -57,11 +62,29 @@ export async function chatHandler(request: Request) {
       if (conversation.userId !== auth.userId) {
         return withCors(errorResponse("Forbidden", 403));
       }
+
+      if (conversation.status !== "ACTIVE") {
+        return withCors(errorResponse("Sesi latihan sudah selesai", 409));
+      }
+
+      const systemPrompt = learningEngineService.buildSystemPrompt({
+        characterId: conversation.characterId,
+        personality: conversation.personality,
+        scenarioType: conversation.scenarioType,
+        difficulty: conversation.difficulty,
+        objective: conversation.objective,
+        language: conversation.language,
+      });
+
+      resolvedModel =
+        model ?? learningEngineService.resolveModel(conversation.personality);
+
+      aiMessages = [{ role: "system", content: systemPrompt }, ...conversationMessages];
     }
 
     const result = await kieAiClient.chatCompletion({
-      model,
-      messages,
+      model: resolvedModel,
+      messages: aiMessages,
     });
 
     if (conversationId && lastUserMessage) {

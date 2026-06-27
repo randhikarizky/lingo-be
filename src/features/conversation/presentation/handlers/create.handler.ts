@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { prisma } from "@/global/database/prisma";
 import { requireAuth } from "@/global/middleware/auth.guard";
+import { learningEngineService } from "@/features/learning/application/learning-engine.service";
+import { getCharacterDisplayName } from "@/features/learning/domain/constants/tutors";
+import { getScenario } from "@/features/learning/domain/constants/scenarios";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
 
@@ -9,39 +12,73 @@ const createConversationSchema = z.object({
   personality: z.string().min(1),
   language: z.string().default("en"),
   title: z.string().optional(),
+  scenarioType: z.string().min(1),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+  objective: z.string().optional(),
 });
 
 export async function createConversationHandler(request: Request) {
   try {
     const auth = await requireAuth();
-    
+
     const body = await request.json();
     const parsed = createConversationSchema.safeParse(body);
-    
+
     if (!parsed.success) {
       return withCors(errorResponse(parsed.error.issues[0].message, 422));
     }
-    
-    const { characterId, personality, language, title } = parsed.data;
-    
-    const displayName = characterId.charAt(0).toUpperCase() + characterId.slice(1);
-    const defaultTitle = `Latihan dengan ${displayName}`;
-    
+
+    const {
+      characterId,
+      personality,
+      language,
+      title,
+      scenarioType,
+      difficulty,
+      objective,
+    } = parsed.data;
+
+    learningEngineService.validateSessionConfig({ scenarioType, difficulty, objective });
+
+    const resolvedObjective = learningEngineService.resolveObjective(
+      scenarioType,
+      objective
+    );
+    const scenario = getScenario(scenarioType);
+    const displayName = getCharacterDisplayName(characterId);
+    const defaultTitle = `${scenario.label} with ${displayName}`;
+
     const conversation = await prisma.conversation.create({
       data: {
         userId: auth.userId,
         characterId,
         personality,
         language,
+        scenarioType,
+        difficulty,
+        objective: resolvedObjective,
         title: title || defaultTitle,
+        status: "ACTIVE",
       },
     });
-    
-    return withCors(successResponse({ id: conversation.id }));
+
+    return withCors(
+      successResponse({
+        id: conversation.id,
+        scenarioType,
+        difficulty,
+        objective: resolvedObjective,
+      })
+    );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return withCors(errorResponse("Unauthorized", 401));
     }
+
+    if (error instanceof Error && error.message.includes("tidak valid")) {
+      return withCors(errorResponse(error.message, 422));
+    }
+
     return withCors(errorResponse("Gagal membuat percakapan", 500));
   }
 }

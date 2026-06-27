@@ -30,7 +30,11 @@ model Conversation {
   characterId  String
   personality  String
   language     String             @default("en")
-  scenarioType String             @default("free")
+  scenarioType String             @default("restaurant")
+  difficulty   String             @default("beginner")
+  objective    String             @default("")
+  summary      Json?
+  metrics      Json?
   status       ConversationStatus @default(ACTIVE)
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
