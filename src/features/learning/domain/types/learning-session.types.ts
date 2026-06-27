@@ -22,3 +22,19 @@ export type LearningSessionMetadata = {
   objective: string;
   language: string;
 };
+
+export type SessionGoalId =
+  | "complete-sentences"
+  | "new-vocabulary"
+  | "english-only"
+  | "independent-practice";
+
+export type SessionGoal = {
+  id: SessionGoalId;
+  emoji: string;
+  label: string;
+  target: number;
+  progress: number;
+  progressLabel: string;
+  achieved: boolean;
+};

@@ -1,8 +1,18 @@
 import { prisma } from "@/global/database/prisma";
 import { requireAuth } from "@/global/middleware/auth.guard";
+import { goalEvaluatorService } from "@/features/learning/application/goal-evaluator.service";
+import type { SessionGoal } from "@/features/learning/domain/types/learning-session.types";
 import { getScenario } from "@/features/learning/domain/constants/scenarios";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
+
+function parseStoredGoals(value: unknown): SessionGoal[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  return value as SessionGoal[];
+}
 
 export async function detailConversationHandler(
   _request: Request,
@@ -30,6 +40,15 @@ export async function detailConversationHandler(
     }
 
     const scenario = getScenario(conversation.scenarioType);
+    const storedGoals = parseStoredGoals(conversation.sessionGoals);
+    const sessionGoals =
+      conversation.status === "COMPLETED" && storedGoals
+        ? storedGoals
+        : goalEvaluatorService.evaluate(
+            conversation.difficulty,
+            conversation.messages,
+            storedGoals
+          );
 
     const responseData = {
       id: conversation.id,
@@ -45,6 +64,7 @@ export async function detailConversationHandler(
       status: conversation.status,
       summary: conversation.summary,
       metrics: conversation.metrics,
+      sessionGoals,
       messages: conversation.messages.map((m) => ({
         id: m.id,
         role: m.role,
