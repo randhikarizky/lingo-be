@@ -16,6 +16,12 @@ export function isMockAiEnabled() {
   return isPlaceholder(process.env.KIE_AI_API_KEY);
 }
 
+export function isMockVoiceEnabled() {
+  if (process.env.MOCK_VOICE === "true") return true;
+  if (process.env.MOCK_VOICE === "false") return false;
+  return isMockAiEnabled();
+}
+
 export function isMockStorageEnabled() {
   if (process.env.MOCK_STORAGE === "true") return true;
   if (process.env.MOCK_STORAGE === "false") return false;
@@ -30,6 +36,7 @@ export function isMockStorageEnabled() {
 export function getMockStatus() {
   return {
     ai: isMockAiEnabled(),
+    voice: isMockVoiceEnabled(),
     storage: isMockStorageEnabled(),
   };
 }
