@@ -24,9 +24,11 @@ model User {
 }
 
 model Conversation {
-  id           String             @id @default(cuid())
+  id           String             @id @default(uuid())
   userId       String
-  title        String
+  title        String?
+  characterId  String
+  personality  String
   language     String             @default("en")
   scenarioType String             @default("free")
   status       ConversationStatus @default(ACTIVE)
@@ -41,12 +43,13 @@ model Conversation {
 }
 
 model Message {
-  id             String      @id @default(cuid())
+  id             String      @id @default(uuid())
   conversationId String
   role           MessageRole
   content        String
   audioUrl       String?
   metadata       Json?
+  correction     Json?
   createdAt      DateTime    @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
