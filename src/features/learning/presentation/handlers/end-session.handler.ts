@@ -1,10 +1,20 @@
 import { prisma } from "@/global/database/prisma";
 import { requireAuth } from "@/global/middleware/auth.guard";
+import { goalEvaluatorService } from "@/features/learning/application/goal-evaluator.service";
 import { learningEngineService } from "@/features/learning/application/learning-engine.service";
 import { sessionSummaryService } from "@/features/learning/application/session-summary.service";
+import type { SessionGoal } from "@/features/learning/domain/types/learning-session.types";
 import { getScenario } from "@/features/learning/domain/constants/scenarios";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
+
+function parseStoredGoals(value: unknown): SessionGoal[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  return value as SessionGoal[];
+}
 
 export async function endSessionHandler(
   _request: Request,
@@ -31,19 +41,32 @@ export async function endSessionHandler(
       return withCors(errorResponse("Forbidden", 403));
     }
 
-    if (conversation.status === "COMPLETED" && conversation.summary && conversation.metrics) {
+    if (
+      conversation.status === "COMPLETED" &&
+      conversation.summary &&
+      conversation.metrics &&
+      conversation.sessionGoals
+    ) {
       return withCors(
         successResponse({
           id: conversation.id,
           status: conversation.status,
           summary: conversation.summary,
           metrics: conversation.metrics,
+          sessionGoals: conversation.sessionGoals,
         })
       );
     }
 
     const metrics = learningEngineService.computeMetrics(conversation.messages);
     const scenario = getScenario(conversation.scenarioType);
+    const storedGoals = parseStoredGoals(conversation.sessionGoals);
+    const sessionGoals = goalEvaluatorService.evaluateFinal(
+      conversation.difficulty,
+      conversation.messages,
+      metrics,
+      storedGoals
+    );
 
     const summary = await sessionSummaryService.generate({
       personality: conversation.personality,
@@ -60,6 +83,7 @@ export async function endSessionHandler(
         status: "COMPLETED",
         summary,
         metrics,
+        sessionGoals,
         updatedAt: new Date(),
       },
     });
@@ -70,6 +94,7 @@ export async function endSessionHandler(
         status: updated.status,
         summary,
         metrics,
+        sessionGoals,
       })
     );
   } catch (error) {
