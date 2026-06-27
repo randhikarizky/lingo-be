@@ -42,6 +42,8 @@ export async function chatHandler(request: Request) {
     }
 
     const { conversationId, messages, model } = parsed.data;
+    const userMessages = messages.filter((m) => m.role === "user");
+    const lastUserMessage = userMessages[userMessages.length - 1];
 
     if (conversationId) {
       const conversation = await prisma.conversation.findUnique({
@@ -55,20 +57,6 @@ export async function chatHandler(request: Request) {
       if (conversation.userId !== auth.userId) {
         return withCors(errorResponse("Forbidden", 403));
       }
-
-      // Save user message (the last user message in the array)
-      const userMessages = messages.filter((m) => m.role === "user");
-      const lastUserMessage = userMessages[userMessages.length - 1];
-
-      if (lastUserMessage) {
-        await prisma.message.create({
-          data: {
-            conversationId,
-            role: "USER",
-            content: lastUserMessage.content,
-          },
-        });
-      }
     }
 
     const result = await kieAiClient.chatCompletion({
@@ -76,21 +64,31 @@ export async function chatHandler(request: Request) {
       messages,
     });
 
-    if (conversationId) {
+    if (conversationId && lastUserMessage) {
       const corrections = extractCorrectionsJson(result.content);
 
-      await prisma.message.create({
-        data: {
-          conversationId,
-          role: "ASSISTANT",
-          content: result.content,
-          correction: corrections || undefined,
-        },
-      });
+      await prisma.$transaction(async (tx) => {
+        await tx.message.create({
+          data: {
+            conversationId,
+            role: "USER",
+            content: lastUserMessage.content,
+          },
+        });
 
-      await prisma.conversation.update({
-        where: { id: conversationId },
-        data: { updatedAt: new Date() },
+        await tx.message.create({
+          data: {
+            conversationId,
+            role: "ASSISTANT",
+            content: result.content,
+            correction: corrections || undefined,
+          },
+        });
+
+        await tx.conversation.update({
+          where: { id: conversationId },
+          data: { updatedAt: new Date() },
+        });
       });
     }
 

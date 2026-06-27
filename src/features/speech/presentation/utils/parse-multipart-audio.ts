@@ -30,15 +30,38 @@ const ALLOWED_MIME_TYPES = new Set([
   "audio/x-m4a",
   "audio/m4a",
   "video/mp4",
-  "application/octet-stream",
 ]);
 
-function isAllowedMimeType(mimeType: string) {
-  if (ALLOWED_MIME_TYPES.has(mimeType)) {
+const ALLOWED_EXTENSIONS = new Set([
+  ".webm",
+  ".mp4",
+  ".m4a",
+  ".mp3",
+  ".wav",
+  ".ogg",
+]);
+
+function normalizeMimeType(mimeType: string) {
+  return mimeType.split(";")[0].trim().toLowerCase();
+}
+
+function hasAllowedExtension(fileName: string) {
+  const lower = fileName.toLowerCase();
+  return [...ALLOWED_EXTENSIONS].some((ext) => lower.endsWith(ext));
+}
+
+function isAllowedMimeType(mimeType: string, fileName: string) {
+  const normalized = normalizeMimeType(mimeType);
+
+  if (ALLOWED_MIME_TYPES.has(normalized)) {
     return true;
   }
 
-  return mimeType.startsWith("audio/");
+  if (normalized === "application/octet-stream" && hasAllowedExtension(fileName)) {
+    return true;
+  }
+
+  return false;
 }
 
 function parseOptionalField(value: FormDataEntryValue | null) {
@@ -77,11 +100,12 @@ export async function parseTranscribeMultipart(
     throw new TranscribeValidationError("File audio melebihi batas 10MB", 422);
   }
 
-  const mimeType = audioEntry.type || "application/octet-stream";
+  const mimeType = normalizeMimeType(audioEntry.type || "application/octet-stream");
+  const fileName = audioEntry.name || "recording.webm";
 
-  if (!isAllowedMimeType(mimeType)) {
+  if (!isAllowedMimeType(mimeType, fileName)) {
     throw new TranscribeValidationError(
-      `Format audio tidak didukung: ${mimeType}`,
+      `Format audio tidak didukung: ${mimeType}. Gunakan webm, mp4, m4a, mp3, wav, atau ogg.`,
       422
     );
   }
@@ -93,7 +117,7 @@ export async function parseTranscribeMultipart(
       buffer,
       mimeType,
       size: audioEntry.size,
-      fileName: audioEntry.name || "recording",
+      fileName,
     },
     language: parseOptionalField(formData.get("language")),
     conversationId: parseOptionalField(formData.get("conversationId")),
