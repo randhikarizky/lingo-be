@@ -13,9 +13,9 @@ export function successResponse<T>(data: T, message = "OK", status = 200) {
   );
 }
 
-export function errorResponse(message: string, status = 400) {
+export function errorResponse<T = null>(message: string, status = 400, data: T | null = null) {
   return NextResponse.json(
-    { success: false, message, data: null } satisfies ApiResponse<null>,
+    { success: false, message, data } satisfies ApiResponse<T | null>,
     { status }
   );
 }

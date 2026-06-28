@@ -5,6 +5,7 @@ import { prisma } from "@/global/database/prisma";
 import { signToken } from "@/global/utils/jwt";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
+import { planService } from "@/features/subscription/application/plan.service";
 import { toUserEntity } from "../../data/mappers/user.mapper";
 
 const registerSchema = z.object({
@@ -39,6 +40,8 @@ export async function registerHandler(request: Request) {
         passwordHash,
       },
     });
+
+    await planService.ensureUserPlan(user.id);
 
     const token = signToken({ userId: user.id, email: user.email });
 
