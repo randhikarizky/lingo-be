@@ -1,4 +1,4 @@
-export const BASE_URL = __ENV.BASE_URL || "http://localhost:406";
+export const BASE_URL = __ENV.BASE_URL || "http://localhost:4626";
 export const LOAD_TEST_PASSWORD = __ENV.LOAD_TEST_PASSWORD || "loadtest123";
 export const LOAD_TEST_USER_COUNT = Number(__ENV.LOAD_TEST_USER_COUNT || 15);
 

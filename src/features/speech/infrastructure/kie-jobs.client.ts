@@ -1,7 +1,8 @@
 import { logError, logInfo, logWarn } from "@/global/utils/logger";
 import { isRetryableHttpStatus, sleep, withExponentialBackoff } from "@/global/utils/retry";
 
-const KIE_AI_BASE_URL = process.env.KIE_AI_BASE_URL ?? "https://api.kie.ai";
+import { getKieJobsUrl } from "@/global/ai/kie-base-url";
+
 const KIE_AI_API_KEY = process.env.KIE_AI_API_KEY ?? "";
 const DEFAULT_POLL_TIMEOUT_MS = Number(process.env.KIE_POLL_TIMEOUT_MS) || 90_000;
 const DEFAULT_POLL_INTERVAL_MS = Number(process.env.KIE_POLL_INTERVAL_MS) || 2_000;
@@ -55,7 +56,7 @@ export async function createKieTask(
 
   const response = await withExponentialBackoff(
     () =>
-      fetch(`${KIE_AI_BASE_URL}/api/v1/jobs/createTask`, {
+      fetch(getKieJobsUrl("createTask"), {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -105,7 +106,7 @@ async function fetchKieRecordInfo(taskId: string, requestId?: string) {
   return withExponentialBackoff(
     async () => {
       const response = await fetch(
-        `${KIE_AI_BASE_URL}/api/v1/jobs/recordInfo?taskId=${encodeURIComponent(taskId)}`,
+        `${getKieJobsUrl("recordInfo")}?taskId=${encodeURIComponent(taskId)}`,
         {
           method: "GET",
           headers: {
