@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 import { voiceService } from "@/features/speech/application/voice.service";
+import {
+  assertActiveConversationAccess,
+  ConversationAccessError,
+} from "@/features/conversation/application/conversation-access.service";
 import { quotaService } from "@/features/subscription/application/quota.service";
 import {
   estimateSpeakingMinutesFromText,
@@ -15,7 +19,7 @@ import { withCors } from "@/global/utils/cors";
 
 const synthesizeSchema = z.object({
   text: z.string().min(1).max(5000),
-  conversationId: z.string().optional(),
+  conversationId: z.string().uuid().optional(),
   language: z.string().optional(),
   voice: z.string().optional(),
 });
@@ -38,6 +42,10 @@ export async function synthesizeHandler(request: Request) {
 
     const estimatedMinutes = estimateSpeakingMinutesFromText(parsed.data.text);
     await quotaService.assertSpeakingAllowed(auth.userId, estimatedMinutes);
+
+    if (parsed.data.conversationId) {
+      await assertActiveConversationAccess(auth.userId, parsed.data.conversationId);
+    }
 
     logInfo(requestId, "speech.synthesize.request", {
       textLength: parsed.data.text.length,
@@ -89,6 +97,13 @@ export async function synthesizeHandler(request: Request) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return withCors(
         attachRequestId(errorResponse("Unauthorized", 401), requestId),
+        request
+      );
+    }
+
+    if (error instanceof ConversationAccessError) {
+      return withCors(
+        attachRequestId(errorResponse(error.message, error.status), requestId),
         request
       );
     }

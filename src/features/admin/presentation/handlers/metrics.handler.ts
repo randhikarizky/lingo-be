@@ -1,12 +1,6 @@
-import { prisma } from "@/global/database/prisma";
-import { PLAN_CATALOG, PLAN_ORDER } from "@/features/subscription/domain/constants/plan-catalog";
+import { costAnalyticsService } from "@/features/admin/application/cost-analytics.service";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
-
-const ESTIMATED_COST_PER_CHAT = 0.002;
-const ESTIMATED_COST_PER_STT = 0.004;
-const ESTIMATED_COST_PER_TTS = 0.003;
-const ESTIMATED_COST_PER_SPEAKING_MINUTE = 0.001;
 
 function isAdminAuthorized(request: Request) {
   const configuredKey = process.env.ADMIN_API_KEY?.trim();
@@ -19,96 +13,29 @@ function isAdminAuthorized(request: Request) {
   return providedKey === configuredKey;
 }
 
+function parseDaysParam(request: Request) {
+  const url = new URL(request.url);
+  const raw = url.searchParams.get("days");
+  const parsed = raw ? Number(raw) : 30;
+
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 90) {
+    return 30;
+  }
+
+  return Math.floor(parsed);
+}
+
 export async function adminMetricsHandler(request: Request) {
   if (!isAdminAuthorized(request)) {
     return withCors(errorResponse("Forbidden", 403));
   }
 
-  const [usersByPlan, usageByType, topUsers, totalUsers] = await Promise.all([
-    prisma.userPlan.groupBy({
-      by: ["plan"],
-      _count: { _all: true },
-    }),
-    prisma.usageLog.groupBy({
-      by: ["type"],
-      _sum: { amount: true },
-    }),
-    prisma.usageLog.groupBy({
-      by: ["userId"],
-      _sum: { amount: true },
-      orderBy: { _sum: { amount: "desc" } },
-      take: 10,
-    }),
-    prisma.user.count(),
-  ]);
+  const days = parseDaysParam(request);
+  const report = await costAnalyticsService.getCostReview(days);
 
-  const usageTotals = {
-    speakingMinutes: 0,
-    aiRequests: 0,
-    sttRequests: 0,
-    ttsRequests: 0,
-  };
+  return withCors(successResponse(report));
+}
 
-  for (const item of usageByType) {
-    const amount = item._sum.amount ?? 0;
-
-    switch (item.type) {
-      case "SPEAKING":
-        usageTotals.speakingMinutes += amount;
-        break;
-      case "CHAT":
-        usageTotals.aiRequests += amount;
-        break;
-      case "STT":
-        usageTotals.sttRequests += amount;
-        break;
-      case "TTS":
-        usageTotals.ttsRequests += amount;
-        break;
-      default:
-        break;
-    }
-  }
-
-  const estimatedProviderCostUsd =
-    usageTotals.aiRequests * ESTIMATED_COST_PER_CHAT +
-    usageTotals.sttRequests * ESTIMATED_COST_PER_STT +
-    usageTotals.ttsRequests * ESTIMATED_COST_PER_TTS +
-    usageTotals.speakingMinutes * ESTIMATED_COST_PER_SPEAKING_MINUTE;
-
-  const planBreakdown = PLAN_ORDER.map((planId) => {
-    const found = usersByPlan.find((item) => item.plan === planId);
-
-    return {
-      plan: planId,
-      label: PLAN_CATALOG[planId].label,
-      users: found?._count._all ?? 0,
-    };
-  });
-
-  const topActiveUsers = await Promise.all(
-    topUsers.map(async (item) => {
-      const user = await prisma.user.findUnique({
-        where: { id: item.userId },
-        select: { id: true, name: true, email: true },
-      });
-
-      return {
-        userId: item.userId,
-        name: user?.name ?? "Unknown",
-        email: user?.email ?? "",
-        totalUsage: item._sum.amount ?? 0,
-      };
-    })
-  );
-
-  return withCors(
-    successResponse({
-      totalUsers,
-      planBreakdown,
-      usageTotals,
-      estimatedProviderCostUsd: Number(estimatedProviderCostUsd.toFixed(2)),
-      topActiveUsers,
-    })
-  );
+export async function adminCostReviewHandler(request: Request) {
+  return adminMetricsHandler(request);
 }

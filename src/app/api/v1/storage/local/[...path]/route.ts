@@ -1,12 +1,8 @@
 import { localFileHandler } from "@/features/storage/presentation/handlers/local-file.handler";
 import { corsPreflightResponse } from "@/global/utils/cors";
+import { wrapDynamicHandler } from "@/global/utils/route-handler";
 
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ path: string[] }> }
-) {
-  return localFileHandler(request, context);
-}
+export const GET = wrapDynamicHandler("GET", localFileHandler);
 
 export async function OPTIONS() {
   return corsPreflightResponse();
