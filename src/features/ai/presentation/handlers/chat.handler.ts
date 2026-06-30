@@ -2,6 +2,9 @@ import { z } from "zod";
 
 import { kieAiClient } from "@/global/ai/kie-ai.client";
 import { learningEngineService } from "@/features/learning/application/learning-engine.service";
+import { quotaService } from "@/features/subscription/application/quota.service";
+import { usageService } from "@/features/subscription/application/usage.service";
+import { mapSubscriptionErrorResponse } from "@/features/subscription/presentation/utils/subscription-response";
 import { requireAuth } from "@/global/middleware/auth.guard";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
@@ -46,6 +49,8 @@ export async function chatHandler(request: Request) {
     const userMessages = messages.filter((m) => m.role === "user");
     const lastUserMessage = userMessages[userMessages.length - 1];
     const conversationMessages = messages.filter((m) => m.role !== "system");
+
+    await quotaService.assertChatAllowed(auth.userId);
 
     let resolvedModel = model;
     let aiMessages = messages;
@@ -115,10 +120,22 @@ export async function chatHandler(request: Request) {
       });
     }
 
+    await usageService.recordUsage({
+      userId: auth.userId,
+      type: "CHAT",
+      amount: 1,
+      metadata: conversationId ? { conversationId } : undefined,
+    });
+
     return withCors(successResponse(result));
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return withCors(errorResponse("Unauthorized", 401));
+    }
+
+    const subscriptionResponse = mapSubscriptionErrorResponse(error);
+    if (subscriptionResponse) {
+      return withCors(subscriptionResponse);
     }
 
     const message =
