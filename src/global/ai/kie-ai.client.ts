@@ -1,4 +1,5 @@
 import { isMockAiEnabled } from "../config/mock.config";
+import { getKieChatCompletionsUrl } from "./kie-base-url";
 
 type KieAiModel = "gpt-5-2" | "gemini-2.5-pro";
 
@@ -28,14 +29,9 @@ export type ChatCompletionResult = {
   model: KieAiModel;
 };
 
-const KIE_AI_BASE_URL = process.env.KIE_AI_BASE_URL ?? "https://api.kie.ai";
 const KIE_AI_API_KEY = process.env.KIE_AI_API_KEY ?? "";
 const DEFAULT_MODEL = (process.env.KIE_AI_DEFAULT_MODEL ??
   "gpt-5-2") as KieAiModel;
-
-function getModelEndpoint(model: KieAiModel) {
-  return `${KIE_AI_BASE_URL}/${model}/v1/chat/completions`;
-}
 
 function getLastUserMessage(messages: ChatMessage[]) {
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
@@ -73,7 +69,7 @@ export class KieAiClient {
       return buildMockResponse(request);
     }
 
-    const response = await fetch(getModelEndpoint(model), {
+    const response = await fetch(getKieChatCompletionsUrl(model), {
       method: "POST",
       headers: {
         Authorization: `Bearer ${KIE_AI_API_KEY}`,
