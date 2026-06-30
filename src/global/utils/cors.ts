@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 function getAllowedOrigins() {
-  const raw = process.env.FRONTEND_URL ?? "http://localhost:306";
+  const raw = process.env.FRONTEND_URL ?? "http://localhost:3626";
   return raw.split(",").map((item) => item.trim()).filter(Boolean);
 }
 
@@ -20,7 +20,7 @@ export function resolveCorsOrigin(request?: Request | null) {
     }
   }
 
-  return allowed[0] ?? "http://localhost:306";
+  return allowed[0] ?? "http://localhost:3626";
 }
 
 export function withCors(response: NextResponse | Response, request?: Request | null) {

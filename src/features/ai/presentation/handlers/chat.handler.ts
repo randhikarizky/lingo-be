@@ -2,6 +2,10 @@ import { z } from "zod";
 
 import { kieAiClient } from "@/global/ai/kie-ai.client";
 import {
+  apiErrorResponse,
+  inferErrorCodeFromMessage,
+} from "@/global/utils/api-error";
+import {
   assertActiveConversationAccess,
   ConversationAccessError,
 } from "@/features/conversation/application/conversation-access.service";
@@ -46,7 +50,7 @@ export async function chatHandler(request: Request) {
     const parsed = chatSchema.safeParse(body);
 
     if (!parsed.success) {
-      return withCors(errorResponse(parsed.error.issues[0].message, 422));
+      return apiErrorResponse(request, parsed.error.issues[0].message, 422);
     }
 
     const { conversationId, messages, model } = parsed.data;
@@ -115,11 +119,11 @@ export async function chatHandler(request: Request) {
     return withCors(successResponse(result));
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
-      return withCors(errorResponse("Unauthorized", 401));
+      return apiErrorResponse(request, "Unauthorized", 401);
     }
 
     if (error instanceof ConversationAccessError) {
-      return withCors(errorResponse(error.message, error.status));
+      return apiErrorResponse(request, error.message, error.status);
     }
 
     const subscriptionResponse = mapSubscriptionErrorResponse(error);
@@ -129,7 +133,9 @@ export async function chatHandler(request: Request) {
 
     const message =
       error instanceof Error ? error.message : "Gagal memproses chat AI";
+    const errorCode = inferErrorCodeFromMessage(message);
+    const status = errorCode === "AI_PROVIDER_ERROR" ? 503 : 500;
 
-    return withCors(errorResponse(message, 500));
+    return apiErrorResponse(request, message, status, errorCode);
   }
 }

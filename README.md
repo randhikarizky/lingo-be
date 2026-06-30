@@ -131,7 +131,7 @@ MOCK_STORAGE=false
 **Contoh (setelah login, simpan cookie):**
 
 ```bash
-curl -X POST http://localhost:406/api/v1/speech/transcribe \
+curl -X POST http://localhost:4626/api/v1/speech/transcribe \
   -b "lingora_token=<JWT>" \
   -F "audio=@recording.webm;type=audio/webm" \
   -F "language=en-US" \

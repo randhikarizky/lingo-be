@@ -1,6 +1,6 @@
 # Lingora Load Tests (k6)
 
-Light load tests for beta readiness. Default target: local backend on port **406** with **mock AI/voice** (no provider cost).
+Light load tests for beta readiness. Default target: local backend on port **4626** with **mock AI/voice** (no provider cost).
 
 ## Prerequisites
 
@@ -53,7 +53,7 @@ npm run loadtest:all
 Custom base URL:
 
 ```powershell
-$env:BASE_URL="http://localhost:406"; npm run loadtest:smoke
+$env:BASE_URL="http://localhost:4626"; npm run loadtest:smoke
 ```
 
 ## Scenarios
