@@ -1,5 +1,9 @@
 import { voiceService } from "@/features/speech/application/voice.service";
 import {
+  assertActiveConversationAccess,
+  ConversationAccessError,
+} from "@/features/conversation/application/conversation-access.service";
+import {
   parseTranscribeMultipart,
   TranscribeValidationError,
 } from "@/features/speech/presentation/utils/parse-multipart-audio";
@@ -24,6 +28,11 @@ export async function transcribeHandler(request: Request) {
     logInfo(requestId, "speech.transcribe.request");
 
     const parsed = await parseTranscribeMultipart(request);
+
+    if (parsed.conversationId) {
+      await assertActiveConversationAccess(auth.userId, parsed.conversationId);
+    }
+
     const estimatedMinutes = estimateSpeakingMinutesFromAudioBytes(
       parsed.audio.buffer.byteLength
     );
@@ -83,6 +92,13 @@ export async function transcribeHandler(request: Request) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return withCors(
         attachRequestId(errorResponse("Unauthorized", 401), requestId),
+        request
+      );
+    }
+
+    if (error instanceof ConversationAccessError) {
+      return withCors(
+        attachRequestId(errorResponse(error.message, error.status), requestId),
         request
       );
     }

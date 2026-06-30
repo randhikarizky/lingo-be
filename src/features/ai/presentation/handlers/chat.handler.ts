@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 import { kieAiClient } from "@/global/ai/kie-ai.client";
+import {
+  assertActiveConversationAccess,
+  ConversationAccessError,
+} from "@/features/conversation/application/conversation-access.service";
 import { learningEngineService } from "@/features/learning/application/learning-engine.service";
 import { quotaService } from "@/features/subscription/application/quota.service";
 import { usageService } from "@/features/subscription/application/usage.service";
@@ -20,7 +24,7 @@ const chatSchema = z.object({
     )
     .min(1),
   model: z.enum(["gpt-5-2", "gemini-2.5-pro"]).optional(),
-  conversationId: z.string().optional(),
+  conversationId: z.string().uuid(),
 });
 
 function extractCorrectionsJson(content: string) {
@@ -52,47 +56,28 @@ export async function chatHandler(request: Request) {
 
     await quotaService.assertChatAllowed(auth.userId);
 
-    let resolvedModel = model;
-    let aiMessages = messages;
+    const conversation = await assertActiveConversationAccess(auth.userId, conversationId);
 
-    if (conversationId) {
-      const conversation = await prisma.conversation.findUnique({
-        where: { id: conversationId },
-      });
+    const systemPrompt = learningEngineService.buildSystemPrompt({
+      characterId: conversation.characterId,
+      personality: conversation.personality,
+      scenarioType: conversation.scenarioType,
+      difficulty: conversation.difficulty,
+      objective: conversation.objective,
+      language: conversation.language,
+    });
 
-      if (!conversation) {
-        return withCors(errorResponse("Percakapan tidak ditemukan", 404));
-      }
+    const resolvedModel =
+      model ?? learningEngineService.resolveModel(conversation.personality);
 
-      if (conversation.userId !== auth.userId) {
-        return withCors(errorResponse("Forbidden", 403));
-      }
-
-      if (conversation.status !== "ACTIVE") {
-        return withCors(errorResponse("Sesi latihan sudah selesai", 409));
-      }
-
-      const systemPrompt = learningEngineService.buildSystemPrompt({
-        characterId: conversation.characterId,
-        personality: conversation.personality,
-        scenarioType: conversation.scenarioType,
-        difficulty: conversation.difficulty,
-        objective: conversation.objective,
-        language: conversation.language,
-      });
-
-      resolvedModel =
-        model ?? learningEngineService.resolveModel(conversation.personality);
-
-      aiMessages = [{ role: "system", content: systemPrompt }, ...conversationMessages];
-    }
+    const aiMessages = [{ role: "system" as const, content: systemPrompt }, ...conversationMessages];
 
     const result = await kieAiClient.chatCompletion({
       model: resolvedModel,
       messages: aiMessages,
     });
 
-    if (conversationId && lastUserMessage) {
+    if (lastUserMessage) {
       const corrections = extractCorrectionsJson(result.content);
 
       await prisma.$transaction(async (tx) => {
@@ -124,13 +109,17 @@ export async function chatHandler(request: Request) {
       userId: auth.userId,
       type: "CHAT",
       amount: 1,
-      metadata: conversationId ? { conversationId } : undefined,
+      metadata: { conversationId },
     });
 
     return withCors(successResponse(result));
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return withCors(errorResponse("Unauthorized", 401));
+    }
+
+    if (error instanceof ConversationAccessError) {
+      return withCors(errorResponse(error.message, error.status));
     }
 
     const subscriptionResponse = mapSubscriptionErrorResponse(error);

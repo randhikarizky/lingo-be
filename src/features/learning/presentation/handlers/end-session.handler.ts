@@ -4,6 +4,7 @@ import { goalEvaluatorService } from "@/features/learning/application/goal-evalu
 import { learningEngineService } from "@/features/learning/application/learning-engine.service";
 import { sessionSummaryService } from "@/features/learning/application/session-summary.service";
 import type { SessionGoal } from "@/features/learning/domain/types/learning-session.types";
+import { parseUuid } from "@/global/utils/uuid";
 import { getScenario } from "@/features/learning/domain/constants/scenarios";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
@@ -23,9 +24,14 @@ export async function endSessionHandler(
   try {
     const auth = await requireAuth();
     const { id } = await context.params;
+    const parsedId = parseUuid(id, "Conversation ID");
+
+    if (!parsedId.ok) {
+      return withCors(errorResponse(parsedId.message, 422));
+    }
 
     const conversation = await prisma.conversation.findUnique({
-      where: { id },
+      where: { id: parsedId.value },
       include: {
         messages: {
           orderBy: { createdAt: "asc" },
@@ -78,7 +84,7 @@ export async function endSessionHandler(
     });
 
     const updated = await prisma.conversation.update({
-      where: { id },
+      where: { id: parsedId.value },
       data: {
         status: "COMPLETED",
         summary,

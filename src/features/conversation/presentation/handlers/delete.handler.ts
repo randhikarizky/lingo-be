@@ -1,5 +1,6 @@
 import { prisma } from "@/global/database/prisma";
 import { requireAuth } from "@/global/middleware/auth.guard";
+import { parseUuid } from "@/global/utils/uuid";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
 
@@ -10,9 +11,14 @@ export async function deleteConversationHandler(
   try {
     const auth = await requireAuth();
     const { id } = await context.params;
+    const parsedId = parseUuid(id, "Conversation ID");
+
+    if (!parsedId.ok) {
+      return withCors(errorResponse(parsedId.message, 422));
+    }
 
     const conversation = await prisma.conversation.findUnique({
-      where: { id },
+      where: { id: parsedId.value },
     });
 
     if (!conversation) {
@@ -24,7 +30,7 @@ export async function deleteConversationHandler(
     }
 
     await prisma.conversation.delete({
-      where: { id },
+      where: { id: parsedId.value },
     });
 
     return withCors(successResponse({ success: true }, "Percakapan berhasil dihapus"));

@@ -1,12 +1,8 @@
-import { corsPreflightResponse } from "@/global/utils/cors";
 import { endSessionHandler } from "@/features/learning/presentation/handlers/end-session.handler";
+import { corsPreflightResponse } from "@/global/utils/cors";
+import { wrapDynamicHandler } from "@/global/utils/route-handler";
 
-export async function POST(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  return endSessionHandler(request, context);
-}
+export const POST = wrapDynamicHandler("POST", endSessionHandler);
 
 export async function OPTIONS() {
   return corsPreflightResponse();

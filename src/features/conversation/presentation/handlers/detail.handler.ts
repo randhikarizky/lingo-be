@@ -3,6 +3,7 @@ import { requireAuth } from "@/global/middleware/auth.guard";
 import { goalEvaluatorService } from "@/features/learning/application/goal-evaluator.service";
 import type { SessionGoal } from "@/features/learning/domain/types/learning-session.types";
 import { getScenario } from "@/features/learning/domain/constants/scenarios";
+import { parseUuid } from "@/global/utils/uuid";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
 
@@ -21,9 +22,14 @@ export async function detailConversationHandler(
   try {
     const auth = await requireAuth();
     const { id } = await context.params;
+    const parsedId = parseUuid(id, "Conversation ID");
+
+    if (!parsedId.ok) {
+      return withCors(errorResponse(parsedId.message, 422));
+    }
 
     const conversation = await prisma.conversation.findUnique({
-      where: { id },
+      where: { id: parsedId.value },
       include: {
         messages: {
           orderBy: { createdAt: "asc" },

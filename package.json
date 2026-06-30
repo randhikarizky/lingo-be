@@ -12,14 +12,19 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "loadtest:setup": "tsx load-tests/setup-users.ts",
+    "loadtest:smoke": "k6 run load-tests/scenarios/smoke.js",
+    "loadtest:chat": "k6 run load-tests/scenarios/chat-quota.js",
+    "loadtest:voice": "k6 run load-tests/scenarios/voice-pipeline.js",
+    "loadtest:login": "k6 run load-tests/scenarios/login-spike.js",
+    "loadtest:all": "npm run loadtest:smoke && npm run loadtest:chat && npm run loadtest:voice && npm run loadtest:login",
+    "admin:cost-review": "tsx scripts/cost-review.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1063.0",
-    "@aws-sdk/s3-request-presigner": "^3.1063.0",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "dayjs": "^1.11.21",

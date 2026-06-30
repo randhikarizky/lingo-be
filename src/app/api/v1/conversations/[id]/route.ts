@@ -1,20 +1,10 @@
-import { corsPreflightResponse } from "@/global/utils/cors";
 import { detailConversationHandler } from "@/features/conversation/presentation/handlers/detail.handler";
 import { deleteConversationHandler } from "@/features/conversation/presentation/handlers/delete.handler";
+import { corsPreflightResponse } from "@/global/utils/cors";
+import { wrapDynamicHandler } from "@/global/utils/route-handler";
 
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  return detailConversationHandler(request, context);
-}
-
-export async function DELETE(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  return deleteConversationHandler(request, context);
-}
+export const GET = wrapDynamicHandler("GET", detailConversationHandler);
+export const DELETE = wrapDynamicHandler("DELETE", deleteConversationHandler);
 
 export async function OPTIONS() {
   return corsPreflightResponse();
