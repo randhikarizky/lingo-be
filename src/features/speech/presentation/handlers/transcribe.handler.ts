@@ -3,6 +3,12 @@ import {
   parseTranscribeMultipart,
   TranscribeValidationError,
 } from "@/features/speech/presentation/utils/parse-multipart-audio";
+import { quotaService } from "@/features/subscription/application/quota.service";
+import {
+  estimateSpeakingMinutesFromAudioBytes,
+  usageService,
+} from "@/features/subscription/application/usage.service";
+import { mapSubscriptionErrorResponse } from "@/features/subscription/presentation/utils/subscription-response";
 import { requireAuth } from "@/global/middleware/auth.guard";
 import { logError, logInfo, logWarn } from "@/global/utils/logger";
 import { attachRequestId, getRequestId } from "@/global/utils/request-id";
@@ -13,11 +19,17 @@ export async function transcribeHandler(request: Request) {
   const requestId = getRequestId(request);
 
   try {
-    await requireAuth();
+    const auth = await requireAuth();
 
     logInfo(requestId, "speech.transcribe.request");
 
     const parsed = await parseTranscribeMultipart(request);
+    const estimatedMinutes = estimateSpeakingMinutesFromAudioBytes(
+      parsed.audio.buffer.byteLength
+    );
+
+    await quotaService.assertSpeakingAllowed(auth.userId, estimatedMinutes);
+
     const result = await voiceService.transcribe({
       audio: parsed.audio.buffer,
       mimeType: parsed.audio.mimeType,
@@ -29,6 +41,17 @@ export async function transcribeHandler(request: Request) {
     logInfo(requestId, "speech.transcribe.response", {
       mock: result.mock,
       textLength: result.text.length,
+    });
+
+    await usageService.recordUsage({
+      userId: auth.userId,
+      type: "STT",
+      amount: 1,
+    });
+    await usageService.recordUsage({
+      userId: auth.userId,
+      type: "SPEAKING",
+      amount: estimatedMinutes,
     });
 
     return withCors(
@@ -62,6 +85,11 @@ export async function transcribeHandler(request: Request) {
         attachRequestId(errorResponse("Unauthorized", 401), requestId),
         request
       );
+    }
+
+    const subscriptionResponse = mapSubscriptionErrorResponse(error);
+    if (subscriptionResponse) {
+      return withCors(attachRequestId(subscriptionResponse, requestId), request);
     }
 
     const message =

@@ -1,6 +1,12 @@
 import { z } from "zod";
 
 import { voiceService } from "@/features/speech/application/voice.service";
+import { quotaService } from "@/features/subscription/application/quota.service";
+import {
+  estimateSpeakingMinutesFromText,
+  usageService,
+} from "@/features/subscription/application/usage.service";
+import { mapSubscriptionErrorResponse } from "@/features/subscription/presentation/utils/subscription-response";
 import { requireAuth } from "@/global/middleware/auth.guard";
 import { logError, logInfo } from "@/global/utils/logger";
 import { attachRequestId, getRequestId } from "@/global/utils/request-id";
@@ -18,7 +24,7 @@ export async function synthesizeHandler(request: Request) {
   const requestId = getRequestId(request);
 
   try {
-    await requireAuth();
+    const auth = await requireAuth();
 
     const body = await request.json();
     const parsed = synthesizeSchema.safeParse(body);
@@ -29,6 +35,9 @@ export async function synthesizeHandler(request: Request) {
         request
       );
     }
+
+    const estimatedMinutes = estimateSpeakingMinutesFromText(parsed.data.text);
+    await quotaService.assertSpeakingAllowed(auth.userId, estimatedMinutes);
 
     logInfo(requestId, "speech.synthesize.request", {
       textLength: parsed.data.text.length,
@@ -46,6 +55,20 @@ export async function synthesizeHandler(request: Request) {
       mock: result.mock,
       bytes: result.audio.length,
       mimeType: result.mimeType,
+    });
+
+    await usageService.recordUsage({
+      userId: auth.userId,
+      type: "TTS",
+      amount: 1,
+      metadata: parsed.data.conversationId
+        ? { conversationId: parsed.data.conversationId }
+        : undefined,
+    });
+    await usageService.recordUsage({
+      userId: auth.userId,
+      type: "SPEAKING",
+      amount: estimatedMinutes,
     });
 
     return withCors(
@@ -68,6 +91,11 @@ export async function synthesizeHandler(request: Request) {
         attachRequestId(errorResponse("Unauthorized", 401), requestId),
         request
       );
+    }
+
+    const subscriptionResponse = mapSubscriptionErrorResponse(error);
+    if (subscriptionResponse) {
+      return withCors(attachRequestId(subscriptionResponse, requestId), request);
     }
 
     const message =
