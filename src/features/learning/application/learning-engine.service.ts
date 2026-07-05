@@ -13,10 +13,7 @@ import { promptBuilderService } from "@/features/learning/application/prompt-bui
 type ConversationMessage = Pick<Message, "role" | "content" | "correction">;
 
 function countWords(text: string) {
-  return text
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+  return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
 function extractNewVocabulary(messages: ConversationMessage[]) {
@@ -77,7 +74,7 @@ export class LearningEngineService {
     const userMessages = messages.filter((message) => message.role === "USER");
     const wordsSpoken = userMessages.reduce(
       (total, message) => total + countWords(message.content),
-      0
+      0,
     );
 
     let corrections = 0;
@@ -86,7 +83,8 @@ export class LearningEngineService {
       if (Array.isArray(message.correction)) {
         corrections += message.correction.length;
       } else if (message.role === "ASSISTANT") {
-        corrections += [...message.content.matchAll(/\[([^|]+)\|([^\]]+)\]/g)].length;
+        corrections += [...message.content.matchAll(/\[([^|]+)\|([^\]]+)\]/g)]
+          .length;
       }
     }
 

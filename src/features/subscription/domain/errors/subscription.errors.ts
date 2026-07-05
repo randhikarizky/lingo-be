@@ -4,7 +4,12 @@ export class QuotaExceededError extends Error {
   limit: number | null;
   used: number;
 
-  constructor(message: string, quotaType: string, used: number, limit: number | null) {
+  constructor(
+    message: string,
+    quotaType: string,
+    used: number,
+    limit: number | null,
+  ) {
     super(message);
     this.name = "QuotaExceededError";
     this.quotaType = quotaType;
@@ -26,10 +31,14 @@ export class FeatureLockedError extends Error {
   }
 }
 
-export function isQuotaExceededError(error: unknown): error is QuotaExceededError {
+export function isQuotaExceededError(
+  error: unknown,
+): error is QuotaExceededError {
   return error instanceof QuotaExceededError;
 }
 
-export function isFeatureLockedError(error: unknown): error is FeatureLockedError {
+export function isFeatureLockedError(
+  error: unknown,
+): error is FeatureLockedError {
   return error instanceof FeatureLockedError;
 }

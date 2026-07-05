@@ -17,7 +17,9 @@ export const RATE_LIMIT_POLICIES: Record<string, RateLimitPolicy> = {
   api: { windowMs: 60 * 1000, max: 180 },
 };
 
-export function getClientIp(request: Request | { headers: Headers; ip?: string | null }) {
+export function getClientIp(
+  request: Request | { headers: Headers; ip?: string | null },
+) {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0]?.trim() ?? "unknown";
@@ -30,7 +32,10 @@ export function getClientIp(request: Request | { headers: Headers; ip?: string |
   return "unknown";
 }
 
-export function applyRateLimit(key: string, policyName: keyof typeof RATE_LIMIT_POLICIES) {
+export function applyRateLimit(
+  key: string,
+  policyName: keyof typeof RATE_LIMIT_POLICIES,
+) {
   const policy = RATE_LIMIT_POLICIES[policyName];
   const now = Date.now();
   const bucket = buckets.get(key);
@@ -51,8 +56,13 @@ export function applyRateLimit(key: string, policyName: keyof typeof RATE_LIMIT_
   return { allowed: true as const, retryAfterSeconds: 0 };
 }
 
-export function resolveRateLimitPolicy(pathname: string): keyof typeof RATE_LIMIT_POLICIES | null {
-  if (pathname.startsWith("/api/v1/auth/login") || pathname.startsWith("/api/v1/auth/register")) {
+export function resolveRateLimitPolicy(
+  pathname: string,
+): keyof typeof RATE_LIMIT_POLICIES | null {
+  if (
+    pathname.startsWith("/api/v1/auth/login") ||
+    pathname.startsWith("/api/v1/auth/register")
+  ) {
     return "auth";
   }
 

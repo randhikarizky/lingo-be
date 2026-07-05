@@ -10,6 +10,6 @@ export async function learningCatalogHandler() {
       scenarios: getScenariosByCategory(),
       difficulties: DIFFICULTIES.map(({ id, label }) => ({ id, label })),
       sessionGoalPreviews: getSessionGoalPreviews(),
-    })
+    }),
   );
 }

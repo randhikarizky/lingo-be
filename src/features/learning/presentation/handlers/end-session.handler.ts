@@ -19,7 +19,7 @@ function parseStoredGoals(value: unknown): SessionGoal[] | null {
 
 export async function endSessionHandler(
   _request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     const auth = await requireAuth();
@@ -60,7 +60,7 @@ export async function endSessionHandler(
           summary: conversation.summary,
           metrics: conversation.metrics,
           sessionGoals: conversation.sessionGoals,
-        })
+        }),
       );
     }
 
@@ -71,7 +71,7 @@ export async function endSessionHandler(
       conversation.difficulty,
       conversation.messages,
       metrics,
-      storedGoals
+      storedGoals,
     );
 
     const summary = await sessionSummaryService.generate({
@@ -101,7 +101,7 @@ export async function endSessionHandler(
         summary,
         metrics,
         sessionGoals,
-      })
+      }),
     );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

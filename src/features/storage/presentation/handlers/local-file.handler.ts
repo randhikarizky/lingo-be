@@ -16,7 +16,7 @@ const MIME_TYPES: Record<string, string> = {
 
 export async function localFileHandler(
   _request: Request,
-  context: { params: Promise<{ path: string[] }> }
+  context: { params: Promise<{ path: string[] }> },
 ) {
   try {
     if (process.env.NODE_ENV === "production" && !isStoragePublic()) {
@@ -37,7 +37,7 @@ export async function localFileHandler(
           "Content-Type": MIME_TYPES[ext] ?? "application/octet-stream",
           "Cache-Control": "private, max-age=3600",
         },
-      })
+      }),
     );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

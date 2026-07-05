@@ -22,7 +22,7 @@ export async function uploadAudioToKie(
     fileName: string;
     mimeType: string;
   },
-  options?: KieRequestOptions
+  options?: KieRequestOptions,
 ) {
   const requestId = options?.requestId;
 
@@ -55,7 +55,7 @@ export async function uploadAudioToKie(
       baseDelayMs: 500,
       requestId,
       label: "kie.upload",
-    }
+    },
   );
 
   if (!response.ok) {

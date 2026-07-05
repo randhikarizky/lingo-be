@@ -6,7 +6,7 @@ import { withCors } from "@/global/utils/cors";
 
 export async function deleteConversationHandler(
   _request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     const auth = await requireAuth();
@@ -33,7 +33,9 @@ export async function deleteConversationHandler(
       where: { id: parsedId.value },
     });
 
-    return withCors(successResponse({ success: true }, "Percakapan berhasil dihapus"));
+    return withCors(
+      successResponse({ success: true }, "Percakapan berhasil dihapus"),
+    );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return withCors(errorResponse("Unauthorized", 401));

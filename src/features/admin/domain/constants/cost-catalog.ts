@@ -51,7 +51,7 @@ export function emptyUsageTotals(): UsageTotals {
 export function accumulateUsageType(
   totals: UsageTotals,
   type: string,
-  amount: number
+  amount: number,
 ): UsageTotals {
   const next = { ...totals };
 
@@ -77,7 +77,7 @@ export function accumulateUsageType(
 
 export function estimateCostFromUsage(
   usage: UsageTotals,
-  rates: CostRates = getCostRates()
+  rates: CostRates = getCostRates(),
 ): CostBreakdown {
   const chatUsd = usage.aiRequests * rates.perChat;
   const sttUsd = usage.sttRequests * rates.perStt;

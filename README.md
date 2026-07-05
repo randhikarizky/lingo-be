@@ -72,12 +72,12 @@ CREATE DATABASE lingora_dev OWNER lingora;
 
 Jika `KIE_AI_API_KEY` dan credential AWS masih placeholder, backend otomatis pakai **dummy mode**:
 
-| Service | Perilaku dummy |
-|---------|----------------|
+| Service    | Perilaku dummy                                |
+| ---------- | --------------------------------------------- |
 | **Kie AI** | Balasan teks contoh dengan prefix `[MOCK AI]` |
-| **AWS S3** | File disimpan lokal di `.local-storage/` |
-| **STT** | Mengembalikan teks contoh |
-| **TTS** | Menyimpan file teks placeholder |
+| **AWS S3** | File disimpan lokal di `.local-storage/`      |
+| **STT**    | Mengembalikan teks contoh                     |
+| **TTS**    | Menyimpan file teks placeholder               |
 
 Cek status mock:
 
@@ -95,28 +95,28 @@ MOCK_STORAGE=false
 
 ## API Endpoints
 
-| Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| GET | `/api/v1/health` | Health check + status mock |
-| POST | `/api/v1/auth/register` | Registrasi |
-| POST | `/api/v1/auth/login` | Login |
-| GET | `/api/v1/auth/me` | User saat ini |
-| POST | `/api/v1/auth/logout` | Logout |
-| POST | `/api/v1/ai/chat` | Chat via Kie AI (atau mock) |
-| POST | `/api/v1/speech/transcribe` | STT upload multipart (mock) |
-| POST | `/api/v1/speech/synthesize` | TTS (atau mock) |
-| GET | `/api/v1/storage/local/*` | Serve file lokal (mock storage) |
+| Method | Endpoint                    | Deskripsi                       |
+| ------ | --------------------------- | ------------------------------- |
+| GET    | `/api/v1/health`            | Health check + status mock      |
+| POST   | `/api/v1/auth/register`     | Registrasi                      |
+| POST   | `/api/v1/auth/login`        | Login                           |
+| GET    | `/api/v1/auth/me`           | User saat ini                   |
+| POST   | `/api/v1/auth/logout`       | Logout                          |
+| POST   | `/api/v1/ai/chat`           | Chat via Kie AI (atau mock)     |
+| POST   | `/api/v1/speech/transcribe` | STT upload multipart (mock)     |
+| POST   | `/api/v1/speech/synthesize` | TTS (atau mock)                 |
+| GET    | `/api/v1/storage/local/*`   | Serve file lokal (mock storage) |
 
 ### `POST /api/v1/speech/transcribe`
 
 **Content-Type:** `multipart/form-data`  
 **Auth:** cookie `lingora_token` (login dulu)
 
-| Field | Wajib | Keterangan |
-|-------|-------|------------|
-| `audio` | Ya | File rekaman (`audio/webm`, `audio/mp4`, dll., maks. 10MB) |
-| `language` | Tidak | Locale STT, mis. `en-US` — menentukan teks mock |
-| `conversationId` | Tidak | ID sesi percakapan dari client |
+| Field            | Wajib | Keterangan                                                 |
+| ---------------- | ----- | ---------------------------------------------------------- |
+| `audio`          | Ya    | File rekaman (`audio/webm`, `audio/mp4`, dll., maks. 10MB) |
+| `language`       | Tidak | Locale STT, mis. `en-US` — menentukan teks mock            |
+| `conversationId` | Tidak | ID sesi percakapan dari client                             |
 
 **Response `data`:**
 

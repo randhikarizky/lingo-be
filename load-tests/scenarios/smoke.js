@@ -29,7 +29,11 @@ export default function smoke() {
     return;
   }
 
-  const chat = postChat(jar, conversationId, "Hello, I would like to order food.");
+  const chat = postChat(
+    jar,
+    conversationId,
+    "Hello, I would like to order food.",
+  );
   check(chat, {
     "chat status 200": (r) => r.status === 200,
   });

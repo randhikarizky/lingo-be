@@ -30,8 +30,13 @@ export function mapHttpStatusToErrorCode(status: number): ApiErrorCode {
 export function inferErrorCodeFromMessage(message: string): ApiErrorCode {
   const lower = message.toLowerCase();
   if (lower.includes("timeout")) return "NETWORK_TIMEOUT";
-  if (lower.includes("kie ai") || lower.includes("provider")) return "AI_PROVIDER_ERROR";
-  if (lower.includes("transkripsi") || lower.includes("tts") || lower.includes("voice")) {
+  if (lower.includes("kie ai") || lower.includes("provider"))
+    return "AI_PROVIDER_ERROR";
+  if (
+    lower.includes("transkripsi") ||
+    lower.includes("tts") ||
+    lower.includes("voice")
+  ) {
     return "VOICE_PROVIDER_ERROR";
   }
   return "SERVER_ERROR";
@@ -41,7 +46,7 @@ export function apiErrorResponse(
   request: Request,
   message: string,
   status: number,
-  errorCode?: ApiErrorCode
+  errorCode?: ApiErrorCode,
 ) {
   const requestId = getRequestId(request);
   const code = errorCode ?? mapHttpStatusToErrorCode(status);
@@ -52,8 +57,8 @@ export function apiErrorResponse(
         errorCode: code,
         requestId,
       }),
-      requestId
+      requestId,
     ),
-    request
+    request,
   );
 }

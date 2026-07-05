@@ -9,13 +9,17 @@ export type ApiResponse<T = unknown> = {
 export function successResponse<T>(data: T, message = "OK", status = 200) {
   return NextResponse.json(
     { success: true, message, data } satisfies ApiResponse<T>,
-    { status }
+    { status },
   );
 }
 
-export function errorResponse<T = null>(message: string, status = 400, data: T | null = null) {
+export function errorResponse<T = null>(
+  message: string,
+  status = 400,
+  data: T | null = null,
+) {
   return NextResponse.json(
     { success: false, message, data } satisfies ApiResponse<T | null>,
-    { status }
+    { status },
   );
 }

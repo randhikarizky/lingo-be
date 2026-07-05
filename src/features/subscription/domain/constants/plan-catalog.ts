@@ -46,7 +46,8 @@ export const PLAN_CATALOG: Record<PlanId, PlanDefinition> = {
   PRO: {
     id: "PRO",
     label: "Pro",
-    description: "Power user dengan akses tanpa batas dan prioritas pemrosesan.",
+    description:
+      "Power user dengan akses tanpa batas dan prioritas pemrosesan.",
     priceLabel: "Rp199rb/bulan",
     speakingMinutesPerDay: null,
     aiRepliesPerDay: null,

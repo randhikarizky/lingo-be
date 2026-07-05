@@ -37,10 +37,7 @@ const HELP_SEEKING_PATTERNS = [
 ];
 
 function countWords(text: string) {
-  return text
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+  return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
 function isCompleteSentence(text: string) {
@@ -55,7 +52,9 @@ function getUserMessages(messages: ConversationMessage[]) {
 }
 
 function countCompleteSentences(messages: ConversationMessage[]) {
-  return getUserMessages(messages).filter((message) => isCompleteSentence(message.content)).length;
+  return getUserMessages(messages).filter((message) =>
+    isCompleteSentence(message.content),
+  ).length;
 }
 
 function extractCorrectedVocabulary(messages: ConversationMessage[]) {
@@ -115,7 +114,9 @@ function containsIndonesian(text: string) {
 }
 
 function countIndonesianMessages(messages: ConversationMessage[]) {
-  return getUserMessages(messages).filter((message) => containsIndonesian(message.content)).length;
+  return getUserMessages(messages).filter((message) =>
+    containsIndonesian(message.content),
+  ).length;
 }
 
 function isHelpSeekingMessage(text: string) {
@@ -123,7 +124,9 @@ function isHelpSeekingMessage(text: string) {
 }
 
 function countHelpSeekingMessages(messages: ConversationMessage[]) {
-  return getUserMessages(messages).filter((message) => isHelpSeekingMessage(message.content)).length;
+  return getUserMessages(messages).filter((message) =>
+    isHelpSeekingMessage(message.content),
+  ).length;
 }
 
 export class GoalEvaluatorService {
@@ -134,10 +137,15 @@ export class GoalEvaluatorService {
   evaluate(
     difficulty: string,
     messages: ConversationMessage[],
-    storedGoals?: SessionGoal[] | null
+    storedGoals?: SessionGoal[] | null,
   ): SessionGoal[] {
     const baseGoals = storedGoals?.length
-      ? storedGoals.map((goal) => ({ ...goal, achieved: false, progress: 0, progressLabel: "" }))
+      ? storedGoals.map((goal) => ({
+          ...goal,
+          achieved: false,
+          progress: 0,
+          progressLabel: "",
+        }))
       : this.buildGoals(difficulty);
 
     const completeSentences = countCompleteSentences(messages);
@@ -185,8 +193,7 @@ export class GoalEvaluatorService {
               helpSeekingMessages === 0
                 ? `${userTurns}/${target} respons mandiri`
                 : `${helpSeekingMessages} kali minta bantuan`,
-            achieved:
-              helpSeekingMessages === 0 && userTurns >= target,
+            achieved: helpSeekingMessages === 0 && userTurns >= target,
           };
         }
         default:
@@ -199,7 +206,7 @@ export class GoalEvaluatorService {
     difficulty: string,
     messages: ConversationMessage[],
     metrics: SessionMetrics,
-    storedGoals?: SessionGoal[] | null
+    storedGoals?: SessionGoal[] | null,
   ) {
     const evaluated = this.evaluate(difficulty, messages, storedGoals);
 
@@ -209,7 +216,10 @@ export class GoalEvaluatorService {
       }
 
       const target = goal.target ?? 3;
-      const vocabularyProgress = Math.max(goal.progress, metrics.newVocabulary.length);
+      const vocabularyProgress = Math.max(
+        goal.progress,
+        metrics.newVocabulary.length,
+      );
 
       return {
         ...goal,

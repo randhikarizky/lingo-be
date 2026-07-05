@@ -35,7 +35,7 @@ function isRetryableError(error: unknown) {
 
 export async function withExponentialBackoff<T>(
   operation: () => Promise<T>,
-  options: RetryOptions
+  options: RetryOptions,
 ): Promise<T> {
   const { maxAttempts, baseDelayMs, requestId, label = "operation" } = options;
   let lastError: unknown;

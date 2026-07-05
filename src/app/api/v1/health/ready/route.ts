@@ -18,7 +18,7 @@ export const { GET, OPTIONS } = createRouteHandler({
           checks: {
             database: "ok",
           },
-        })
+        }),
       );
     } catch {
       return withCors(
@@ -27,7 +27,7 @@ export const { GET, OPTIONS } = createRouteHandler({
           checks: {
             database: "failed",
           },
-        })
+        }),
       );
     }
   },

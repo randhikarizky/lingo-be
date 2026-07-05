@@ -17,7 +17,7 @@ function parseStoredGoals(value: unknown): SessionGoal[] | null {
 
 export async function detailConversationHandler(
   _request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     const auth = await requireAuth();
@@ -53,7 +53,7 @@ export async function detailConversationHandler(
         : goalEvaluatorService.evaluate(
             conversation.difficulty,
             conversation.messages,
-            storedGoals
+            storedGoals,
           );
 
     const responseData = {

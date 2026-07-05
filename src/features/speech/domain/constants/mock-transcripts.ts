@@ -4,8 +4,7 @@ const DEFAULT_TRANSCRIPT =
 const TRANSCRIPTS_BY_LANGUAGE: Record<string, string> = {
   "en-US": DEFAULT_TRANSCRIPT,
   "en-GB": "Hello, I'd like to practise my English speaking today.",
-  "id-ID":
-    "Halo, saya ingin berlatih berbicara bahasa Inggris hari ini.",
+  "id-ID": "Halo, saya ingin berlatih berbicara bahasa Inggris hari ini.",
 };
 
 export const MAX_AUDIO_SIZE_BYTES = 10 * 1024 * 1024;

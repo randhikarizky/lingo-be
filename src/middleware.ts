@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { applyRateLimit, getClientIp, resolveRateLimitPolicy } from "@/global/middleware/rate-limit";
+import {
+  applyRateLimit,
+  getClientIp,
+  resolveRateLimitPolicy,
+} from "@/global/middleware/rate-limit";
 import { resolveCorsOrigin } from "@/global/utils/cors";
 
 function applyCorsHeaders(response: NextResponse, origin: string) {
@@ -21,8 +25,14 @@ export function middleware(request: NextRequest) {
   if (request.method === "OPTIONS") {
     const response = new NextResponse(null, { status: 204 });
     applyCorsHeaders(response, origin);
-    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Request-Id, X-Admin-Key");
+    response.headers.set(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    );
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Request-Id, X-Admin-Key",
+    );
     response.headers.set("Access-Control-Max-Age", "86400");
     return response;
   }
@@ -40,7 +50,7 @@ export function middleware(request: NextRequest) {
           message: "Terlalu banyak permintaan. Coba lagi nanti.",
           data: null,
         },
-        { status: 429 }
+        { status: 429 },
       );
       response.headers.set("Retry-After", String(limited.retryAfterSeconds));
       return applyCorsHeaders(response, origin);

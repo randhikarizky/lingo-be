@@ -42,7 +42,11 @@ export async function createConversationHandler(request: Request) {
       objective,
     } = parsed.data;
 
-    learningEngineService.validateSessionConfig({ scenarioType, difficulty, objective });
+    learningEngineService.validateSessionConfig({
+      scenarioType,
+      difficulty,
+      objective,
+    });
 
     const scenario = getScenario(scenarioType);
     const displayName = getCharacterDisplayName(characterId);
@@ -55,7 +59,7 @@ export async function createConversationHandler(request: Request) {
 
     const resolvedObjective = learningEngineService.resolveObjective(
       scenarioType,
-      objective
+      objective,
     );
     const defaultTitle = `${scenario.label} with ${displayName}`;
 
@@ -83,7 +87,7 @@ export async function createConversationHandler(request: Request) {
         difficulty,
         objective: resolvedObjective,
         sessionGoals,
-      })
+      }),
     );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

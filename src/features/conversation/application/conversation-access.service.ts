@@ -12,7 +12,7 @@ export class ConversationAccessError extends Error {
 
 export async function assertActiveConversationAccess(
   userId: string,
-  conversationId: string
+  conversationId: string,
 ) {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },

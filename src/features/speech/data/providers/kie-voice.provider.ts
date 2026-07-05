@@ -15,8 +15,7 @@ import {
 } from "@/features/speech/infrastructure/kie-jobs.client";
 import { logInfo } from "@/global/utils/logger";
 
-const KIE_STT_MODEL =
-  process.env.KIE_STT_MODEL ?? "elevenlabs/speech-to-text";
+const KIE_STT_MODEL = process.env.KIE_STT_MODEL ?? "elevenlabs/speech-to-text";
 const KIE_TTS_MODEL =
   process.env.KIE_TTS_MODEL ?? "elevenlabs/text-to-speech-turbo-2-5";
 const KIE_TTS_VOICE = process.env.KIE_TTS_VOICE ?? "Rachel";
@@ -39,7 +38,7 @@ export class KieVoiceProvider implements VoiceProvider {
         fileName: input.fileName,
         mimeType: input.mimeType,
       },
-      { requestId }
+      { requestId },
     );
 
     const taskId = await createKieTask(
@@ -52,14 +51,16 @@ export class KieVoiceProvider implements VoiceProvider {
           diarize: false,
         },
       },
-      { requestId }
+      { requestId },
     );
 
     const resultJson = await pollKieTaskResult(taskId, { requestId });
     const text = parseKieTextResult(resultJson);
 
     if (requestId) {
-      logInfo(requestId, "voice.transcribe.success", { textLength: text.length });
+      logInfo(requestId, "voice.transcribe.success", {
+        textLength: text.length,
+      });
     }
 
     return {
@@ -91,7 +92,7 @@ export class KieVoiceProvider implements VoiceProvider {
           language_code: input.language ?? "",
         },
       },
-      { requestId }
+      { requestId },
     );
 
     const resultJson = await pollKieTaskResult(taskId, { requestId });

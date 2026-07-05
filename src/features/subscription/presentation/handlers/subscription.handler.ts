@@ -39,11 +39,13 @@ export async function subscriptionMeHandler() {
               ? "all"
               : snapshot.definition.scenarios,
           allowedTutors:
-            snapshot.definition.tutors === "all" ? "all" : snapshot.definition.tutors,
+            snapshot.definition.tutors === "all"
+              ? "all"
+              : snapshot.definition.tutors,
           sessionSummary: snapshot.definition.sessionSummary,
           priorityProcessing: snapshot.definition.priorityProcessing,
         },
-      })
+      }),
     );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
@@ -78,8 +80,8 @@ export async function subscriptionUpgradeHandler(request: Request) {
           message:
             "Upgrade berhasil disimpan. Integrasi pembayaran akan dihubungkan pada rilis berikutnya.",
         },
-        "Upgrade paket berhasil"
-      )
+        "Upgrade paket berhasil",
+      ),
     );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

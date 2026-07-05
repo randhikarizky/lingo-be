@@ -1,11 +1,17 @@
-const REQUIRED_IN_PRODUCTION = ["JWT_SECRET", "ADMIN_API_KEY", "DATABASE_URL"] as const;
+const REQUIRED_IN_PRODUCTION = [
+  "JWT_SECRET",
+  "ADMIN_API_KEY",
+  "DATABASE_URL",
+] as const;
 
 export function assertProductionEnv() {
   if (process.env.NODE_ENV !== "production") {
     return;
   }
 
-  const missing = REQUIRED_IN_PRODUCTION.filter((key) => !process.env[key]?.trim());
+  const missing = REQUIRED_IN_PRODUCTION.filter(
+    (key) => !process.env[key]?.trim(),
+  );
 
   if (missing.length > 0) {
     throw new Error(`Missing required production env: ${missing.join(", ")}`);

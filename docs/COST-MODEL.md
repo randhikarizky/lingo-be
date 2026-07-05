@@ -6,21 +6,21 @@ Estimasi biaya provider AI untuk operasional closed beta. Angka default **bukan 
 
 Semua usage tercatat di `usage_logs`:
 
-| Type | Trigger |
-|------|---------|
-| `CHAT` | Setiap AI reply sukses |
-| `STT` | Setiap transcribe sukses |
-| `TTS` | Setiap synthesize sukses |
+| Type       | Trigger                        |
+| ---------- | ------------------------------ |
+| `CHAT`     | Setiap AI reply sukses         |
+| `STT`      | Setiap transcribe sukses       |
+| `TTS`      | Setiap synthesize sukses       |
 | `SPEAKING` | Menit estimasi dari audio/text |
 
 ## Rate default (USD)
 
-| Env | Default | Asumsi |
-|-----|---------|--------|
-| `COST_USD_PER_CHAT` | 0.002 | ~1 chat completion |
-| `COST_USD_PER_STT` | 0.004 | ~1 STT job |
-| `COST_USD_PER_TTS` | 0.003 | ~1 TTS job |
-| `COST_USD_PER_SPEAKING_MINUTE` | 0.001 | Overhead pipeline suara |
+| Env                            | Default | Asumsi                  |
+| ------------------------------ | ------- | ----------------------- |
+| `COST_USD_PER_CHAT`            | 0.002   | ~1 chat completion      |
+| `COST_USD_PER_STT`             | 0.004   | ~1 STT job              |
+| `COST_USD_PER_TTS`             | 0.003   | ~1 TTS job              |
+| `COST_USD_PER_SPEAKING_MINUTE` | 0.001   | Overhead pipeline suara |
 
 Override di `.env` setelah bandingkan invoice provider.
 
@@ -71,12 +71,12 @@ Multiplier         = 1.51
 
 ## Metrik operasional
 
-| Metrik | Interpretasi |
-|--------|--------------|
-| `freePlanCostUsd` | Subsidi ke user FREE — pantau agar tidak melebar |
-| `avgCostPerActiveUserUsd` | Unit economics per user aktif |
-| `projectedMonthlyCostUsd` | Proyeksi dari rata-rata 7 hari terakhir |
-| `dominantCostDriver` | chat / stt / tts / speaking — fokus optimasi |
+| Metrik                    | Interpretasi                                     |
+| ------------------------- | ------------------------------------------------ |
+| `freePlanCostUsd`         | Subsidi ke user FREE — pantau agar tidak melebar |
+| `avgCostPerActiveUserUsd` | Unit economics per user aktif                    |
+| `projectedMonthlyCostUsd` | Proyeksi dari rata-rata 7 hari terakhir          |
+| `dominantCostDriver`      | chat / stt / tts / speaking — fokus optimasi     |
 
 ## Guardrails bisnis (sudah ada)
 
