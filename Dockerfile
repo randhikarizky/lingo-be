@@ -18,6 +18,13 @@ ENV JWT_SECRET="build-time-secret"
 ENV ADMIN_API_KEY="build-time-admin-key"
 
 RUN npx prisma generate
+RUN npx esbuild prisma/seed.ts \
+  --bundle \
+  --platform=node \
+  --format=cjs \
+  --outfile=prisma/seed.runtime.cjs \
+  --external:@prisma/client \
+  --external:bcryptjs
 RUN npm run build
 
 FROM base AS runner
@@ -36,6 +43,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./docker-entrypoint.sh
 
