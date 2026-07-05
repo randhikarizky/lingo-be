@@ -1,6 +1,5 @@
 const REQUIRED_IN_PRODUCTION = [
   "JWT_SECRET",
-  "ADMIN_API_KEY",
   "DATABASE_URL",
 ] as const;
 
