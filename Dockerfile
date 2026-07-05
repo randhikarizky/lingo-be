@@ -4,7 +4,7 @@ FROM node:24-alpine AS base
 WORKDIR /app
 
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 COPY package.json package-lock.json ./
 RUN npm ci
 
@@ -26,7 +26,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=4626
 ENV HOSTNAME=0.0.0.0
 
-RUN apk add --no-cache wget && \
+RUN apk add --no-cache wget openssl libc6-compat && \
     addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
