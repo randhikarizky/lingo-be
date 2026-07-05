@@ -1,7 +1,4 @@
-const REQUIRED_IN_PRODUCTION = [
-  "JWT_SECRET",
-  "DATABASE_URL",
-] as const;
+const REQUIRED_IN_PRODUCTION = ["JWT_SECRET", "DATABASE_URL"] as const;
 
 export function assertProductionEnv() {
   if (process.env.NODE_ENV !== "production") {
