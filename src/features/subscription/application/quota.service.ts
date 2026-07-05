@@ -19,9 +19,11 @@ function formatPlanLabel(planId: PlanId) {
 
 export class QuotaService {
   async getUsageSnapshot(userId: string) {
-    const { planId, definition } = await planService.getUserPlanSnapshot(userId);
+    const { planId, definition } =
+      await planService.getUserPlanSnapshot(userId);
     const usage = await usageService.getDailyUsage(userId);
-    const activeConversations = await usageService.getActiveConversationCount(userId);
+    const activeConversations =
+      await usageService.getActiveConversationCount(userId);
 
     return {
       planId,
@@ -32,7 +34,10 @@ export class QuotaService {
         speakingMinutes:
           definition.speakingMinutesPerDay === null
             ? null
-            : Math.max(0, definition.speakingMinutesPerDay - usage.speakingMinutes),
+            : Math.max(
+                0,
+                definition.speakingMinutesPerDay - usage.speakingMinutes,
+              ),
         aiReplies:
           definition.aiRepliesPerDay === null
             ? null
@@ -58,7 +63,7 @@ export class QuotaService {
         "Kuota latihan hari ini telah habis. Upgrade ke Starter untuk melanjutkan belajar tanpa batasan yang mengganggu.",
         "aiReplies",
         snapshot.usage.aiReplies,
-        limit
+        limit,
       );
     }
 
@@ -78,7 +83,7 @@ export class QuotaService {
         "Kuota speaking hari ini telah habis. Upgrade ke Starter untuk melanjutkan latihan suara.",
         "speakingMinutes",
         snapshot.usage.speakingMinutes,
-        limit
+        limit,
       );
     }
 
@@ -98,14 +103,18 @@ export class QuotaService {
         "Batas conversation aktif tercapai. Selesaikan sesi lama atau upgrade paket untuk membuat sesi baru.",
         "activeConversations",
         snapshot.activeConversations,
-        limit
+        limit,
       );
     }
 
     return snapshot;
   }
 
-  assertScenarioAllowed(planId: PlanId, scenarioId: string, scenarioLabel: string) {
+  assertScenarioAllowed(
+    planId: PlanId,
+    scenarioId: string,
+    scenarioLabel: string,
+  ) {
     if (planIncludesScenario(planId, scenarioId)) {
       return;
     }
@@ -115,7 +124,7 @@ export class QuotaService {
     throw new FeatureLockedError(
       `${scenarioLabel} tersedia mulai paket ${formatPlanLabel(requiredPlan)}.`,
       "scenario",
-      requiredPlan
+      requiredPlan,
     );
   }
 
@@ -129,7 +138,7 @@ export class QuotaService {
     throw new FeatureLockedError(
       `Tutor ${tutorName} tersedia mulai paket ${formatPlanLabel(requiredPlan)}.`,
       "tutor",
-      requiredPlan
+      requiredPlan,
     );
   }
 }

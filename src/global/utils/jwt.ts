@@ -2,7 +2,8 @@ import jwt, { type SignOptions } from "jsonwebtoken";
 
 import { getJwtSecret } from "@/global/config/env";
 
-const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN ?? "7d") as SignOptions["expiresIn"];
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN ??
+  "7d") as SignOptions["expiresIn"];
 
 export type JwtPayload = {
   userId: string;

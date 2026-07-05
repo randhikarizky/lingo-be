@@ -11,6 +11,6 @@ export const { GET, OPTIONS } = createRouteHandler({
         service: "lingora-be",
         timestamp: new Date().toISOString(),
         mock: getMockStatus(),
-      })
+      }),
     ),
 });

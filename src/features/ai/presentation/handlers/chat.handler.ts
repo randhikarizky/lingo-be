@@ -24,7 +24,7 @@ const chatSchema = z.object({
       z.object({
         role: z.enum(["system", "user", "assistant", "developer"]),
         content: z.string().min(1),
-      })
+      }),
     )
     .min(1),
   model: z.enum(["gpt-5-2", "gemini-2.5-pro"]).optional(),
@@ -60,7 +60,10 @@ export async function chatHandler(request: Request) {
 
     await quotaService.assertChatAllowed(auth.userId);
 
-    const conversation = await assertActiveConversationAccess(auth.userId, conversationId);
+    const conversation = await assertActiveConversationAccess(
+      auth.userId,
+      conversationId,
+    );
 
     const systemPrompt = learningEngineService.buildSystemPrompt({
       characterId: conversation.characterId,
@@ -74,7 +77,10 @@ export async function chatHandler(request: Request) {
     const resolvedModel =
       model ?? learningEngineService.resolveModel(conversation.personality);
 
-    const aiMessages = [{ role: "system" as const, content: systemPrompt }, ...conversationMessages];
+    const aiMessages = [
+      { role: "system" as const, content: systemPrompt },
+      ...conversationMessages,
+    ];
 
     const result = await kieAiClient.chatCompletion({
       model: resolvedModel,

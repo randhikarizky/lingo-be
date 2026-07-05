@@ -48,7 +48,7 @@ export async function registerHandler(request: Request) {
     const response = successResponse(
       toUserEntity(user),
       "Registrasi berhasil",
-      201
+      201,
     );
 
     response.cookies.set("lingora_token", token, {

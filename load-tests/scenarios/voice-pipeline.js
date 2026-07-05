@@ -38,7 +38,11 @@ export default function voicePipeline() {
     "transcribe 200": (r) => r.status === 200,
   });
 
-  const chat = postChat(jar, conversationId, "I want to practice ordering in English.");
+  const chat = postChat(
+    jar,
+    conversationId,
+    "I want to practice ordering in English.",
+  );
   check(chat, {
     "chat 200 or 403": (r) => r.status === 200 || r.status === 403,
   });
@@ -47,7 +51,7 @@ export default function voicePipeline() {
     const synth = postSynthesize(
       jar,
       conversationId,
-      "Sure, let's practice your restaurant order."
+      "Sure, let's practice your restaurant order.",
     );
     check(synth, {
       "synthesize 200": (r) => r.status === 200,

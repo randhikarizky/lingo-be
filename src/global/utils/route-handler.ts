@@ -2,8 +2,11 @@ import { corsPreflightResponse } from "./cors";
 import { logError, logInfo } from "@/global/utils/logger";
 import { attachRequestId, getRequestId } from "@/global/utils/request-id";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RouteHandler = (request: Request, ...args: any[]) => Promise<Response> | Response;
+type RouteHandler = (
+  request: Request,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...args: any[]
+) => Promise<Response> | Response;
 
 function wrapHandler(method: string, handler: RouteHandler): RouteHandler {
   return async (request: Request, ...args: unknown[]) => {
@@ -58,6 +61,9 @@ export function createRouteHandler(handlers: {
   return wrapped as typeof handlers & { OPTIONS: () => Response };
 }
 
-export function wrapDynamicHandler(method: string, handler: RouteHandler): RouteHandler {
+export function wrapDynamicHandler(
+  method: string,
+  handler: RouteHandler,
+): RouteHandler {
   return wrapHandler(method, handler);
 }

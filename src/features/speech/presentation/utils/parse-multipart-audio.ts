@@ -57,7 +57,10 @@ function isAllowedMimeType(mimeType: string, fileName: string) {
     return true;
   }
 
-  if (normalized === "application/octet-stream" && hasAllowedExtension(fileName)) {
+  if (
+    normalized === "application/octet-stream" &&
+    hasAllowedExtension(fileName)
+  ) {
     return true;
   }
 
@@ -74,14 +77,14 @@ function parseOptionalField(value: FormDataEntryValue | null) {
 }
 
 export async function parseTranscribeMultipart(
-  request: Request
+  request: Request,
 ): Promise<ParsedTranscribeForm> {
   const contentType = request.headers.get("content-type") ?? "";
 
   if (!contentType.includes("multipart/form-data")) {
     throw new TranscribeValidationError(
       "Content-Type harus multipart/form-data",
-      415
+      415,
     );
   }
 
@@ -100,13 +103,15 @@ export async function parseTranscribeMultipart(
     throw new TranscribeValidationError("File audio melebihi batas 10MB", 422);
   }
 
-  const mimeType = normalizeMimeType(audioEntry.type || "application/octet-stream");
+  const mimeType = normalizeMimeType(
+    audioEntry.type || "application/octet-stream",
+  );
   const fileName = audioEntry.name || "recording.webm";
 
   if (!isAllowedMimeType(mimeType, fileName)) {
     throw new TranscribeValidationError(
       `Format audio tidak didukung: ${mimeType}. Gunakan webm, mp4, m4a, mp3, wav, atau ogg.`,
-      422
+      422,
     );
   }
 

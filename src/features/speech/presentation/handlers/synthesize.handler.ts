@@ -35,8 +35,11 @@ export async function synthesizeHandler(request: Request) {
 
     if (!parsed.success) {
       return withCors(
-        attachRequestId(errorResponse(parsed.error.issues[0].message, 422), requestId),
-        request
+        attachRequestId(
+          errorResponse(parsed.error.issues[0].message, 422),
+          requestId,
+        ),
+        request,
       );
     }
 
@@ -44,7 +47,10 @@ export async function synthesizeHandler(request: Request) {
     await quotaService.assertSpeakingAllowed(auth.userId, estimatedMinutes);
 
     if (parsed.data.conversationId) {
-      await assertActiveConversationAccess(auth.userId, parsed.data.conversationId);
+      await assertActiveConversationAccess(
+        auth.userId,
+        parsed.data.conversationId,
+      );
     }
 
     logInfo(requestId, "speech.synthesize.request", {
@@ -89,28 +95,31 @@ export async function synthesizeHandler(request: Request) {
             "X-Voice-Mock": result.mock ? "true" : "false",
           },
         }),
-        requestId
+        requestId,
       ),
-      request
+      request,
     );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return withCors(
         attachRequestId(errorResponse("Unauthorized", 401), requestId),
-        request
+        request,
       );
     }
 
     if (error instanceof ConversationAccessError) {
       return withCors(
         attachRequestId(errorResponse(error.message, error.status), requestId),
-        request
+        request,
       );
     }
 
     const subscriptionResponse = mapSubscriptionErrorResponse(error);
     if (subscriptionResponse) {
-      return withCors(attachRequestId(subscriptionResponse, requestId), request);
+      return withCors(
+        attachRequestId(subscriptionResponse, requestId),
+        request,
+      );
     }
 
     const message =
@@ -122,15 +131,15 @@ export async function synthesizeHandler(request: Request) {
       return withCors(
         attachRequestId(
           errorResponse("Layanan suara timeout. Coba lagi.", 504),
-          requestId
+          requestId,
         ),
-        request
+        request,
       );
     }
 
     return withCors(
       attachRequestId(errorResponse(message, 500), requestId),
-      request
+      request,
     );
   }
 }

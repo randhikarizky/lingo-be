@@ -21,7 +21,8 @@ export const SCENARIOS: ScenarioDefinition[] = [
     label: "Restaurant",
     category: "Daily Life",
     objective: "Successfully order a complete meal.",
-    setting: "You are roleplaying in a restaurant with the learner as a customer.",
+    setting:
+      "You are roleplaying in a restaurant with the learner as a customer.",
   },
   {
     id: "cafe",

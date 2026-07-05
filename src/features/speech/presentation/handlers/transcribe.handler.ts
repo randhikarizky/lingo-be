@@ -34,7 +34,7 @@ export async function transcribeHandler(request: Request) {
     }
 
     const estimatedMinutes = estimateSpeakingMinutesFromAudioBytes(
-      parsed.audio.buffer.byteLength
+      parsed.audio.buffer.byteLength,
     );
 
     await quotaService.assertSpeakingAllowed(auth.userId, estimatedMinutes);
@@ -73,9 +73,9 @@ export async function transcribeHandler(request: Request) {
             ? "STT mock — gunakan MOCK_VOICE=false dan KIE_AI_API_KEY untuk provider real."
             : "Transkripsi berhasil",
         }),
-        requestId
+        requestId,
       ),
-      request
+      request,
     );
   } catch (error) {
     if (error instanceof TranscribeValidationError) {
@@ -85,27 +85,30 @@ export async function transcribeHandler(request: Request) {
       });
       return withCors(
         attachRequestId(errorResponse(error.message, error.status), requestId),
-        request
+        request,
       );
     }
 
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return withCors(
         attachRequestId(errorResponse("Unauthorized", 401), requestId),
-        request
+        request,
       );
     }
 
     if (error instanceof ConversationAccessError) {
       return withCors(
         attachRequestId(errorResponse(error.message, error.status), requestId),
-        request
+        request,
       );
     }
 
     const subscriptionResponse = mapSubscriptionErrorResponse(error);
     if (subscriptionResponse) {
-      return withCors(attachRequestId(subscriptionResponse, requestId), request);
+      return withCors(
+        attachRequestId(subscriptionResponse, requestId),
+        request,
+      );
     }
 
     const message =
@@ -117,15 +120,15 @@ export async function transcribeHandler(request: Request) {
       return withCors(
         attachRequestId(
           errorResponse("Layanan suara timeout. Coba lagi.", 504),
-          requestId
+          requestId,
         ),
-        request
+        request,
       );
     }
 
     return withCors(
       attachRequestId(errorResponse(message, 500), requestId),
-      request
+      request,
     );
   }
 }

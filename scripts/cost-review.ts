@@ -35,23 +35,31 @@ async function main() {
   console.log("Cost by plan:");
   for (const plan of report.costByPlan) {
     console.log(
-      `  ${plan.label.padEnd(10)} users=${String(plan.users).padStart(3)} cost=${formatUsd(plan.costUsd)} avg/user=${formatUsd(plan.avgCostPerUserUsd)}`
+      `  ${plan.label.padEnd(10)} users=${String(plan.users).padStart(3)} cost=${formatUsd(plan.costUsd)} avg/user=${formatUsd(plan.avgCostPerUserUsd)}`,
     );
   }
   console.log("");
 
   console.log("Insights:");
-  console.log(`  Free plan cost:      ${formatUsd(report.insights.freePlanCostUsd)}`);
-  console.log(`  Paid plan cost:      ${formatUsd(report.insights.paidPlanCostUsd)}`);
-  console.log(`  Avg / active user:   ${formatUsd(report.insights.avgCostPerActiveUserUsd)}`);
-  console.log(`  Projected monthly:   ${formatUsd(report.insights.projectedMonthlyCostUsd)}`);
+  console.log(
+    `  Free plan cost:      ${formatUsd(report.insights.freePlanCostUsd)}`,
+  );
+  console.log(
+    `  Paid plan cost:      ${formatUsd(report.insights.paidPlanCostUsd)}`,
+  );
+  console.log(
+    `  Avg / active user:   ${formatUsd(report.insights.avgCostPerActiveUserUsd)}`,
+  );
+  console.log(
+    `  Projected monthly:   ${formatUsd(report.insights.projectedMonthlyCostUsd)}`,
+  );
   console.log(`  Dominant driver:     ${report.insights.dominantCostDriver}`);
   console.log("");
 
   console.log("Top spenders:");
   for (const user of report.topSpenders) {
     console.log(
-      `  ${user.email.padEnd(28)} [${user.plan}] ${formatUsd(user.estimatedCostUsd)}`
+      `  ${user.email.padEnd(28)} [${user.plan}] ${formatUsd(user.estimatedCostUsd)}`,
     );
   }
 
@@ -63,7 +71,9 @@ async function main() {
   }
 
   console.log("\nRates (override via env):");
-  console.log(`  CHAT=${report.costRates.rates.chat} STT=${report.costRates.rates.stt} TTS=${report.costRates.rates.tts} SPEAKING=${report.costRates.rates.speakingMinute}`);
+  console.log(
+    `  CHAT=${report.costRates.rates.chat} STT=${report.costRates.rates.stt} TTS=${report.costRates.rates.tts} SPEAKING=${report.costRates.rates.speakingMinute}`,
+  );
   console.log("");
 }
 

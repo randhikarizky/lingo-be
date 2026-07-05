@@ -58,12 +58,12 @@ $env:BASE_URL="http://localhost:4626"; npm run loadtest:smoke
 
 ## Scenarios
 
-| Script | VUs | Goal |
-|--------|-----|------|
-| `smoke.js` | 1 | Health + login + 1 chat |
-| `chat-quota.js` | 10 | Quota engine under concurrent chat |
-| `voice-pipeline.js` | 5 | STT/chat/TTS latency baseline |
-| `login-spike.js` | up to 25 | Auth + rate limit behavior |
+| Script              | VUs      | Goal                               |
+| ------------------- | -------- | ---------------------------------- |
+| `smoke.js`          | 1        | Health + login + 1 chat            |
+| `chat-quota.js`     | 10       | Quota engine under concurrent chat |
+| `voice-pipeline.js` | 5        | STT/chat/TTS latency baseline      |
+| `login-spike.js`    | up to 25 | Auth + rate limit behavior         |
 
 ## Metrics to watch
 

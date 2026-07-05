@@ -2,7 +2,9 @@ const DEFAULT_KIE_ROOT = "https://api.kie.ai";
 
 /** Root host only — strips trailing `/api/v1` if misconfigured in env. */
 export function getKieRootBaseUrl() {
-  const raw = (process.env.KIE_AI_BASE_URL ?? DEFAULT_KIE_ROOT).trim().replace(/\/$/, "");
+  const raw = (process.env.KIE_AI_BASE_URL ?? DEFAULT_KIE_ROOT)
+    .trim()
+    .replace(/\/$/, "");
   return raw.replace(/\/api\/v1$/i, "") || DEFAULT_KIE_ROOT;
 }
 

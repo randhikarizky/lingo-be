@@ -1,11 +1,17 @@
 import { logError, logInfo, logWarn } from "@/global/utils/logger";
-import { isRetryableHttpStatus, sleep, withExponentialBackoff } from "@/global/utils/retry";
+import {
+  isRetryableHttpStatus,
+  sleep,
+  withExponentialBackoff,
+} from "@/global/utils/retry";
 
 import { getKieJobsUrl } from "@/global/ai/kie-base-url";
 
 const KIE_AI_API_KEY = process.env.KIE_AI_API_KEY ?? "";
-const DEFAULT_POLL_TIMEOUT_MS = Number(process.env.KIE_POLL_TIMEOUT_MS) || 90_000;
-const DEFAULT_POLL_INTERVAL_MS = Number(process.env.KIE_POLL_INTERVAL_MS) || 2_000;
+const DEFAULT_POLL_TIMEOUT_MS =
+  Number(process.env.KIE_POLL_TIMEOUT_MS) || 90_000;
+const DEFAULT_POLL_INTERVAL_MS =
+  Number(process.env.KIE_POLL_INTERVAL_MS) || 2_000;
 const MAX_POLL_INTERVAL_MS = 10_000;
 const POLL_FETCH_MAX_ATTEMPTS = 3;
 const POLL_FETCH_BASE_DELAY_MS = 500;
@@ -46,7 +52,7 @@ export async function createKieTask(
     model: string;
     input: Record<string, unknown>;
   },
-  options?: KieRequestOptions
+  options?: KieRequestOptions,
 ) {
   const requestId = options?.requestId;
 
@@ -69,7 +75,7 @@ export async function createKieTask(
       baseDelayMs: POLL_FETCH_BASE_DELAY_MS,
       requestId,
       label: "kie.createTask",
-    }
+    },
   );
 
   if (!response.ok) {
@@ -89,14 +95,19 @@ export async function createKieTask(
     const message = payload.msg || "Kie createTask gagal";
 
     if (requestId) {
-      logError(requestId, "kie.createTask.rejected", { code: payload.code, msg: payload.msg });
+      logError(requestId, "kie.createTask.rejected", {
+        code: payload.code,
+        msg: payload.msg,
+      });
     }
 
     throw new Error(message);
   }
 
   if (requestId) {
-    logInfo(requestId, "kie.createTask.success", { taskId: payload.data.taskId });
+    logInfo(requestId, "kie.createTask.success", {
+      taskId: payload.data.taskId,
+    });
   }
 
   return payload.data.taskId;
@@ -112,14 +123,16 @@ async function fetchKieRecordInfo(taskId: string, requestId?: string) {
           headers: {
             Authorization: `Bearer ${KIE_AI_API_KEY}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
         const errorText = await response.text();
 
         if (isRetryableHttpStatus(response.status)) {
-          throw new Error(`Kie recordInfo error (${response.status}): ${errorText}`);
+          throw new Error(
+            `Kie recordInfo error (${response.status}): ${errorText}`,
+          );
         }
 
         const message = `Kie recordInfo error (${response.status}): ${errorText}`;
@@ -141,7 +154,7 @@ async function fetchKieRecordInfo(taskId: string, requestId?: string) {
       baseDelayMs: POLL_FETCH_BASE_DELAY_MS,
       requestId,
       label: "kie.recordInfo",
-    }
+    },
   );
 }
 
@@ -151,7 +164,7 @@ export async function pollKieTaskResult(
     timeoutMs?: number;
     intervalMs?: number;
     requestId?: string;
-  }
+  },
 ) {
   const timeoutMs = options?.timeoutMs ?? DEFAULT_POLL_TIMEOUT_MS;
   const initialIntervalMs = options?.intervalMs ?? DEFAULT_POLL_INTERVAL_MS;
@@ -161,7 +174,11 @@ export async function pollKieTaskResult(
   let intervalMs = initialIntervalMs;
 
   if (requestId) {
-    logInfo(requestId, "kie.poll.start", { taskId, timeoutMs, initialIntervalMs });
+    logInfo(requestId, "kie.poll.start", {
+      taskId,
+      timeoutMs,
+      initialIntervalMs,
+    });
   }
 
   while (Date.now() - startedAt < timeoutMs) {
@@ -263,24 +280,27 @@ export function parseKieAudioUrl(resultJson: string): string {
   return url;
 }
 
-export async function downloadRemoteAudio(url: string, options?: KieRequestOptions) {
+export async function downloadRemoteAudio(
+  url: string,
+  options?: KieRequestOptions,
+) {
   const requestId = options?.requestId;
 
-  const response = await withExponentialBackoff(
-    () => fetch(url),
-    {
-      maxAttempts: POLL_FETCH_MAX_ATTEMPTS,
-      baseDelayMs: POLL_FETCH_BASE_DELAY_MS,
-      requestId,
-      label: "kie.downloadAudio",
-    }
-  );
+  const response = await withExponentialBackoff(() => fetch(url), {
+    maxAttempts: POLL_FETCH_MAX_ATTEMPTS,
+    baseDelayMs: POLL_FETCH_BASE_DELAY_MS,
+    requestId,
+    label: "kie.downloadAudio",
+  });
 
   if (!response.ok) {
     const message = `Gagal mengunduh audio TTS (${response.status})`;
 
     if (requestId) {
-      logError(requestId, "kie.downloadAudio.failed", { status: response.status, url });
+      logError(requestId, "kie.downloadAudio.failed", {
+        status: response.status,
+        url,
+      });
     }
 
     throw new Error(message);
@@ -290,7 +310,10 @@ export async function downloadRemoteAudio(url: string, options?: KieRequestOptio
   const mimeType = response.headers.get("content-type") ?? "audio/mpeg";
 
   if (requestId) {
-    logInfo(requestId, "kie.downloadAudio.success", { bytes: buffer.length, mimeType });
+    logInfo(requestId, "kie.downloadAudio.success", {
+      bytes: buffer.length,
+      mimeType,
+    });
   }
 
   return { buffer, mimeType };

@@ -9,7 +9,10 @@ import {
   roundUsd,
   type UsageTotals,
 } from "@/features/admin/domain/constants/cost-catalog";
-import { PLAN_CATALOG, PLAN_ORDER } from "@/features/subscription/domain/constants/plan-catalog";
+import {
+  PLAN_CATALOG,
+  PLAN_ORDER,
+} from "@/features/subscription/domain/constants/plan-catalog";
 import { prisma } from "@/global/database/prisma";
 
 function getStartOfDay(date: Date) {
@@ -21,11 +24,12 @@ function formatDateKey(date: Date) {
 }
 
 function buildUsageFromGrouped(
-  rows: Array<{ type: UsageType; _sum: { amount: number | null } }>
+  rows: Array<{ type: UsageType; _sum: { amount: number | null } }>,
 ): UsageTotals {
   return rows.reduce(
-    (totals, row) => accumulateUsageType(totals, row.type, row._sum.amount ?? 0),
-    emptyUsageTotals()
+    (totals, row) =>
+      accumulateUsageType(totals, row.type, row._sum.amount ?? 0),
+    emptyUsageTotals(),
   );
 }
 
@@ -68,7 +72,9 @@ export class CostAnalyticsService {
     const costBreakdown = estimateCostFromUsage(usageTotals);
     const rates = getCostRatesPublic();
 
-    const planByUserId = new Map(userPlans.map((item) => [item.userId, item.plan]));
+    const planByUserId = new Map(
+      userPlans.map((item) => [item.userId, item.plan]),
+    );
 
     const usageByPlanMap = new Map<PlanType, UsageTotals>();
     for (const planId of PLAN_ORDER) {
@@ -82,16 +88,23 @@ export class CostAnalyticsService {
       const plan = planByUserId.get(row.userId) ?? "FREE";
 
       const planUsage = usageByPlanMap.get(plan) ?? emptyUsageTotals();
-      usageByPlanMap.set(plan, accumulateUsageType(planUsage, row.type, amount));
+      usageByPlanMap.set(
+        plan,
+        accumulateUsageType(planUsage, row.type, amount),
+      );
 
       const userUsage = costByUser.get(row.userId) ?? emptyUsageTotals();
-      costByUser.set(row.userId, accumulateUsageType(userUsage, row.type, amount));
+      costByUser.set(
+        row.userId,
+        accumulateUsageType(userUsage, row.type, amount),
+      );
     }
 
     const costByPlan = PLAN_ORDER.map((planId) => {
       const usage = usageByPlanMap.get(planId) ?? emptyUsageTotals();
       const cost = estimateCostFromUsage(usage);
-      const users = usersByPlan.find((item) => item.plan === planId)?._count._all ?? 0;
+      const users =
+        usersByPlan.find((item) => item.plan === planId)?._count._all ?? 0;
 
       return {
         plan: planId,
@@ -109,7 +122,10 @@ export class CostAnalyticsService {
     for (const log of recentLogs) {
       const key = formatDateKey(log.createdAt);
       const current = dailyTrendMap.get(key) ?? emptyUsageTotals();
-      dailyTrendMap.set(key, accumulateUsageType(current, log.type, log.amount));
+      dailyTrendMap.set(
+        key,
+        accumulateUsageType(current, log.type, log.amount),
+      );
     }
 
     const dailyTrend = Array.from(dailyTrendMap.entries())
@@ -144,7 +160,7 @@ export class CostAnalyticsService {
           usage: item.usage,
           estimatedCostUsd: item.estimatedCostUsd,
         };
-      })
+      }),
     );
 
     const freePlanCost =
@@ -197,7 +213,7 @@ export class CostAnalyticsService {
   }
 
   private resolveDominantDriver(
-    breakdown: ReturnType<typeof estimateCostFromUsage>
+    breakdown: ReturnType<typeof estimateCostFromUsage>,
   ) {
     const entries = [
       { key: "chat", value: breakdown.chatUsd },

@@ -81,13 +81,13 @@ Browser akan terbuka di `http://localhost:5555` — Anda bisa lihat tabel `users
 
 ## Troubleshooting
 
-| Masalah | Solusi |
-|---------|--------|
-| `Connection refused` | Pastikan PostgreSQL service berjalan (Services → `postgresql-x64-16`) |
-| `password authentication failed` | Cek username/password di `DATABASE_URL` |
-| `database does not exist` | Jalankan `CREATE DATABASE lingora_dev` |
-| `Docker not recognized` | Install Docker Desktop atau gunakan Opsi 2 |
-| Port 5432 sudah dipakai | Ganti port di install atau di `docker-compose.yml` |
+| Masalah                          | Solusi                                                                |
+| -------------------------------- | --------------------------------------------------------------------- |
+| `Connection refused`             | Pastikan PostgreSQL service berjalan (Services → `postgresql-x64-16`) |
+| `password authentication failed` | Cek username/password di `DATABASE_URL`                               |
+| `database does not exist`        | Jalankan `CREATE DATABASE lingora_dev`                                |
+| `Docker not recognized`          | Install Docker Desktop atau gunakan Opsi 2                            |
+| Port 5432 sudah dipakai          | Ganti port di install atau di `docker-compose.yml`                    |
 
 ---
 
@@ -102,5 +102,6 @@ npm run db:studio    # Open Prisma Studio GUI
 ```
 
 Demo account setelah seed:
+
 - Email: `demo@lingora.app`
 - Password: `password123`

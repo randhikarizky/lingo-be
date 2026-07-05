@@ -43,7 +43,7 @@ export default function chatQuota() {
     const response = postChat(
       jar,
       conversationId,
-      `Load test message ${attempt + 1} from VU ${__VU}`
+      `Load test message ${attempt + 1} from VU ${__VU}`,
     );
 
     if (response.status === 200) {

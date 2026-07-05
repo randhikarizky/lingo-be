@@ -11,7 +11,9 @@ type ConversationMessage = Pick<Message, "role" | "content">;
 
 function buildTranscript(messages: ConversationMessage[]) {
   return messages
-    .filter((message) => message.role === "USER" || message.role === "ASSISTANT")
+    .filter(
+      (message) => message.role === "USER" || message.role === "ASSISTANT",
+    )
     .map((message) => `${message.role}: ${message.content}`)
     .join("\n\n");
 }
@@ -47,10 +49,13 @@ function buildFallbackSummary(metrics: SessionMetrics): SessionSummaryFeedback {
   return {
     grammar: "Keep practicing sentence structure in short, clear phrases.",
     vocabulary: `You used about ${metrics.wordsSpoken} words and learned ${metrics.newVocabulary.length} corrected expressions.`,
-    fluency: "Your speaking flow is developing — keep responding in full sentences.",
-    confidence: "You stayed engaged throughout the session. Keep building momentum.",
+    fluency:
+      "Your speaking flow is developing — keep responding in full sentences.",
+    confidence:
+      "You stayed engaged throughout the session. Keep building momentum.",
     strength: "Great effort completing the practice scenario.",
-    improvementArea: "Try using past tense and follow-up questions more consistently.",
+    improvementArea:
+      "Try using past tense and follow-up questions more consistently.",
   };
 }
 
@@ -94,7 +99,9 @@ export class SessionSummaryService {
       ],
     });
 
-    return parseSummaryJson(result.content) ?? buildFallbackSummary(params.metrics);
+    return (
+      parseSummaryJson(result.content) ?? buildFallbackSummary(params.metrics)
+    );
   }
 }
 

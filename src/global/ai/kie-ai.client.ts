@@ -38,7 +38,9 @@ function getLastUserMessage(messages: ChatMessage[]) {
   return lastUser?.content ?? "";
 }
 
-function buildMockResponse(request: ChatCompletionRequest): ChatCompletionResult {
+function buildMockResponse(
+  request: ChatCompletionRequest,
+): ChatCompletionResult {
   const model = request.model ?? DEFAULT_MODEL;
   const lastMessage = getLastUserMessage(request.messages);
 
@@ -62,7 +64,9 @@ export class KieAiClient {
     return isMockAiEnabled();
   }
 
-  async chatCompletion(request: ChatCompletionRequest): Promise<ChatCompletionResult> {
+  async chatCompletion(
+    request: ChatCompletionRequest,
+  ): Promise<ChatCompletionResult> {
     const model = request.model ?? DEFAULT_MODEL;
 
     if (isMockAiEnabled()) {

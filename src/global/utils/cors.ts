@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 
 function getAllowedOrigins() {
   const raw = process.env.FRONTEND_URL ?? "http://localhost:3626";
-  return raw.split(",").map((item) => item.trim()).filter(Boolean);
+  return raw
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function isLocalhostOrigin(origin: string) {
@@ -23,7 +26,10 @@ export function resolveCorsOrigin(request?: Request | null) {
   return allowed[0] ?? "http://localhost:3626";
 }
 
-export function withCors(response: NextResponse | Response, request?: Request | null) {
+export function withCors(
+  response: NextResponse | Response,
+  request?: Request | null,
+) {
   const origin = resolveCorsOrigin(request);
 
   response.headers.set("Access-Control-Allow-Origin", origin);
@@ -31,11 +37,11 @@ export function withCors(response: NextResponse | Response, request?: Request | 
   response.headers.set("Vary", "Origin");
   response.headers.set(
     "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   );
   response.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
+    "Content-Type, Authorization",
   );
   return response;
 }

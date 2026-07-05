@@ -28,14 +28,17 @@ export async function progressSummaryHandler() {
       },
     });
     const messageCount = userMessages.length;
-    const totalCharacters = userMessages.reduce((sum, msg) => sum + msg.content.length, 0);
+    const totalCharacters = userMessages.reduce(
+      (sum, msg) => sum + msg.content.length,
+      0,
+    );
     const speakingMinutes = Math.ceil(totalCharacters / 12 / 60);
 
     // 3. Calculate streak (consecutive days of practice)
     const dates = Array.from(
       new Set(
-        conversations.map((c) => dayjs(c.createdAt).format("YYYY-MM-DD"))
-      )
+        conversations.map((c) => dayjs(c.createdAt).format("YYYY-MM-DD")),
+      ),
     ).sort((a, b) => b.localeCompare(a)); // desc
 
     let currentStreak = 0;
@@ -72,7 +75,7 @@ export async function progressSummaryHandler() {
         speakingMinutes,
         currentStreak,
         lastPracticeDate,
-      })
+      }),
     );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

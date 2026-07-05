@@ -15,7 +15,7 @@ export function login(email, password, jar) {
       headers: JSON_HEADERS,
       jar,
       tags: { name: "auth_login" },
-    }
+    },
   );
 
   check(response, {
@@ -43,7 +43,7 @@ export function createConversation(jar) {
       headers: JSON_HEADERS,
       jar,
       tags: { name: "conversation_create" },
-    }
+    },
   );
 
   check(response, {
@@ -70,7 +70,7 @@ export function postChat(jar, conversationId, content) {
       headers: JSON_HEADERS,
       jar,
       tags: { name: "ai_chat" },
-    }
+    },
   );
 }
 
@@ -89,12 +89,14 @@ export function postSynthesize(jar, conversationId, text) {
       },
       jar,
       tags: { name: "speech_synthesize" },
-    }
+    },
   );
 }
 
 export function postTranscribe(jar, conversationId) {
-  const audioBytes = new Uint8Array([0x1a, 0x45, 0xdf, 0xa3, 0x00, 0x00, 0x00, 0x08]);
+  const audioBytes = new Uint8Array([
+    0x1a, 0x45, 0xdf, 0xa3, 0x00, 0x00, 0x00, 0x08,
+  ]);
 
   return http.post(
     `${BASE_URL}/api/v1/speech/transcribe`,
@@ -106,7 +108,7 @@ export function postTranscribe(jar, conversationId) {
     {
       jar,
       tags: { name: "speech_transcribe" },
-    }
+    },
   );
 }
 

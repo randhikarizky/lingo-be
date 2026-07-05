@@ -13,13 +13,15 @@ const GOAL_TEMPLATES: GoalTemplate[] = [
     id: "complete-sentences",
     emoji: "🎯",
     label: "Gunakan minimal {target} kalimat lengkap",
-    getTarget: (difficulty) => (difficulty === "beginner" ? 3 : difficulty === "intermediate" ? 5 : 7),
+    getTarget: (difficulty) =>
+      difficulty === "beginner" ? 3 : difficulty === "intermediate" ? 5 : 7,
   },
   {
     id: "new-vocabulary",
     emoji: "🎯",
     label: "Pelajari {target} kosakata baru dari koreksi tutor",
-    getTarget: (difficulty) => (difficulty === "beginner" ? 2 : difficulty === "intermediate" ? 3 : 4),
+    getTarget: (difficulty) =>
+      difficulty === "beginner" ? 2 : difficulty === "intermediate" ? 3 : 4,
   },
   {
     id: "english-only",
@@ -31,13 +33,16 @@ const GOAL_TEMPLATES: GoalTemplate[] = [
     id: "independent-practice",
     emoji: "🎯",
     label: "Selesaikan latihan tanpa minta bantuan",
-    getTarget: (difficulty) => (difficulty === "beginner" ? 3 : difficulty === "intermediate" ? 4 : 5),
+    getTarget: (difficulty) =>
+      difficulty === "beginner" ? 3 : difficulty === "intermediate" ? 4 : 5,
   },
 ];
 
 export function buildSessionGoalTemplates(difficulty: string): SessionGoal[] {
   const difficultyId = (
-    difficulty === "intermediate" || difficulty === "advanced" ? difficulty : "beginner"
+    difficulty === "intermediate" || difficulty === "advanced"
+      ? difficulty
+      : "beginner"
   ) as DifficultyId;
 
   return GOAL_TEMPLATES.map((template) => {
@@ -57,13 +62,17 @@ export function buildSessionGoalTemplates(difficulty: string): SessionGoal[] {
 }
 
 export function getSessionGoalPreviews() {
-  return (["beginner", "intermediate", "advanced"] as DifficultyId[]).map((difficulty) => ({
-    difficulty,
-    goals: buildSessionGoalTemplates(difficulty).map(({ id, emoji, label, target }) => ({
-      id,
-      emoji,
-      label,
-      target,
-    })),
-  }));
+  return (["beginner", "intermediate", "advanced"] as DifficultyId[]).map(
+    (difficulty) => ({
+      difficulty,
+      goals: buildSessionGoalTemplates(difficulty).map(
+        ({ id, emoji, label, target }) => ({
+          id,
+          emoji,
+          label,
+          target,
+        }),
+      ),
+    }),
+  );
 }
