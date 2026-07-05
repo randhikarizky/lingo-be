@@ -4,7 +4,6 @@ import {
   accumulateUsageType,
   emptyUsageTotals,
   estimateCostFromUsage,
-  getCostRates,
   getCostRatesPublic,
   roundUsd,
   type UsageTotals,

@@ -14,7 +14,7 @@ import { quotaService } from "@/features/subscription/application/quota.service"
 import { usageService } from "@/features/subscription/application/usage.service";
 import { mapSubscriptionErrorResponse } from "@/features/subscription/presentation/utils/subscription-response";
 import { requireAuth } from "@/global/middleware/auth.guard";
-import { errorResponse, successResponse } from "@/global/utils/response";
+import { successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
 import { prisma } from "@/global/database/prisma";
 

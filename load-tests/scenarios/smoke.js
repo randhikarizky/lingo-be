@@ -43,11 +43,11 @@ export default function smoke() {
 
 export function handleSummary(data) {
   return {
-    stdout: textSummary(data, { indent: " ", enableColors: true }),
+    stdout: textSummary(data),
   };
 }
 
-function textSummary(data, opts) {
+function textSummary(data) {
   const { metrics } = data;
   const p95 = metrics.http_req_duration?.values?.["p(95)"] ?? 0;
   const failed = metrics.http_req_failed?.values?.rate ?? 0;
