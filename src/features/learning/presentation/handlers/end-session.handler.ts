@@ -53,18 +53,38 @@ export async function endSessionHandler(
       conversation.metrics &&
       conversation.sessionGoals
     ) {
+      const storedMetrics =
+        typeof conversation.metrics === "object" && conversation.metrics
+          ? (conversation.metrics as Record<string, unknown>)
+          : {};
+
       return withCors(
         successResponse({
           id: conversation.id,
           status: conversation.status,
           summary: conversation.summary,
-          metrics: conversation.metrics,
+          metrics: {
+            ...storedMetrics,
+            focusScore:
+              (storedMetrics.focusScore as number | undefined) ??
+              conversation.focusScore,
+            guardRedirectCount:
+              (storedMetrics.guardRedirectCount as number | undefined) ??
+              conversation.guardRedirectCount,
+          },
           sessionGoals: conversation.sessionGoals,
         }),
       );
     }
 
-    const metrics = learningEngineService.computeMetrics(conversation.messages);
+    const baseMetrics = learningEngineService.computeMetrics(
+      conversation.messages,
+    );
+    const metrics = {
+      ...baseMetrics,
+      focusScore: conversation.focusScore,
+      guardRedirectCount: conversation.guardRedirectCount,
+    };
     const scenario = getScenario(conversation.scenarioType);
     const storedGoals = parseStoredGoals(conversation.sessionGoals);
     const sessionGoals = goalEvaluatorService.evaluateFinal(
