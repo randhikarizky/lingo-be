@@ -10,6 +10,8 @@ import {
   ConversationAccessError,
 } from "@/features/conversation/application/conversation-access.service";
 import { learningEngineService } from "@/features/learning/application/learning-engine.service";
+import { logConversationGuardEvent } from "@/features/learning/application/conversation-guard.analytics";
+import { conversationGuardService } from "@/features/learning/application/conversation-guard.service";
 import { quotaService } from "@/features/subscription/application/quota.service";
 import { usageService } from "@/features/subscription/application/usage.service";
 import { mapSubscriptionErrorResponse } from "@/features/subscription/presentation/utils/subscription-response";
@@ -65,27 +67,58 @@ export async function chatHandler(request: Request) {
       conversationId,
     );
 
-    const systemPrompt = learningEngineService.buildSystemPrompt({
+    const sessionMetadata = {
       characterId: conversation.characterId,
       personality: conversation.personality,
       scenarioType: conversation.scenarioType,
       difficulty: conversation.difficulty,
       objective: conversation.objective,
       language: conversation.language,
-    });
+    };
+
+    const systemPrompt = learningEngineService.buildSystemPrompt(sessionMetadata);
 
     const resolvedModel =
       model ?? learningEngineService.resolveModel(conversation.personality);
 
-    const aiMessages = [
-      { role: "system" as const, content: systemPrompt },
-      ...conversationMessages,
-    ];
+    const guardState = {
+      focusScore: conversation.focusScore,
+      redirectCount: conversation.guardRedirectCount,
+    };
 
-    const result = await kieAiClient.chatCompletion({
-      model: resolvedModel,
-      messages: aiMessages,
-    });
+    const guardEvaluation = lastUserMessage
+      ? conversationGuardService.evaluate(
+          lastUserMessage.content,
+          sessionMetadata,
+          guardState,
+        )
+      : null;
+
+    const guardResult = guardEvaluation?.result;
+    const nextGuardState = guardEvaluation?.nextState ?? guardState;
+
+    if (guardResult) {
+      logConversationGuardEvent(guardResult.category, {
+        conversationId,
+        focusScore: nextGuardState.focusScore,
+        redirectCount: nextGuardState.redirectCount,
+      });
+    }
+
+    const result =
+      guardResult && !guardResult.allowAI
+        ? {
+            content: guardResult.redirectMessage!,
+            mock: false,
+            model: resolvedModel,
+          }
+        : await kieAiClient.chatCompletion({
+            model: resolvedModel,
+            messages: [
+              { role: "system" as const, content: systemPrompt },
+              ...conversationMessages,
+            ],
+          });
 
     if (lastUserMessage) {
       const corrections = extractCorrectionsJson(result.content);
@@ -110,17 +143,23 @@ export async function chatHandler(request: Request) {
 
         await tx.conversation.update({
           where: { id: conversationId },
-          data: { updatedAt: new Date() },
+          data: {
+            focusScore: nextGuardState.focusScore,
+            guardRedirectCount: nextGuardState.redirectCount,
+            updatedAt: new Date(),
+          },
         });
       });
     }
 
-    await usageService.recordUsage({
-      userId: auth.userId,
-      type: "CHAT",
-      amount: 1,
-      metadata: { conversationId },
-    });
+    if (!guardResult || guardResult.allowAI) {
+      await usageService.recordUsage({
+        userId: auth.userId,
+        type: "CHAT",
+        amount: 1,
+        metadata: { conversationId },
+      });
+    }
 
     return withCors(successResponse(result));
   } catch (error) {

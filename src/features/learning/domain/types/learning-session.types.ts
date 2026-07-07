@@ -3,6 +3,8 @@ export type SessionMetrics = {
   corrections: number;
   newVocabulary: string[];
   estimatedSpeakingMinutes: number;
+  focusScore?: number;
+  guardRedirectCount?: number;
 };
 
 export type SessionSummaryFeedback = {
