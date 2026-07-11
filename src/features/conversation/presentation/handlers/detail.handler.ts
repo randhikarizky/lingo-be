@@ -75,6 +75,7 @@ export async function detailConversationHandler(
         id: m.id,
         role: m.role,
         content: m.content,
+        audioUrl: m.audioUrl,
         correction: m.correction,
         createdAt: m.createdAt.toISOString(),
       })),

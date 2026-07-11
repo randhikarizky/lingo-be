@@ -31,6 +31,10 @@ const chatSchema = z.object({
     .min(1),
   model: z.enum(["gpt-5-2", "gemini-2.5-pro"]).optional(),
   conversationId: z.string().uuid(),
+  userAudioUrl: z.string().url().optional(),
+  userAudioKey: z.string().optional(),
+  userAudioMimeType: z.string().optional(),
+  userAudioSize: z.number().int().nonnegative().optional(),
 });
 
 function extractCorrectionsJson(content: string) {
@@ -55,7 +59,15 @@ export async function chatHandler(request: Request) {
       return apiErrorResponse(request, parsed.error.issues[0].message, 422);
     }
 
-    const { conversationId, messages, model } = parsed.data;
+    const {
+      conversationId,
+      messages,
+      model,
+      userAudioUrl,
+      userAudioKey,
+      userAudioMimeType,
+      userAudioSize,
+    } = parsed.data;
     const userMessages = messages.filter((m) => m.role === "user");
     const lastUserMessage = userMessages[userMessages.length - 1];
     const conversationMessages = messages.filter((m) => m.role !== "system");
@@ -120,19 +132,36 @@ export async function chatHandler(request: Request) {
             ],
           });
 
+    let userMessageId: string | undefined;
+    let assistantMessageId: string | undefined;
+
     if (lastUserMessage) {
       const corrections = extractCorrectionsJson(result.content);
+      const userAudioMetadata =
+        userAudioUrl && userAudioKey
+          ? {
+              audio: {
+                key: userAudioKey,
+                url: userAudioUrl,
+                mimeType: userAudioMimeType ?? "audio/webm",
+                size: userAudioSize ?? 0,
+                createdAt: new Date().toISOString(),
+              },
+            }
+          : undefined;
 
       await prisma.$transaction(async (tx) => {
-        await tx.message.create({
+        const userMessage = await tx.message.create({
           data: {
             conversationId,
             role: "USER",
             content: lastUserMessage.content,
+            audioUrl: userAudioUrl,
+            metadata: userAudioMetadata,
           },
         });
 
-        await tx.message.create({
+        const assistantMessage = await tx.message.create({
           data: {
             conversationId,
             role: "ASSISTANT",
@@ -140,6 +169,9 @@ export async function chatHandler(request: Request) {
             correction: corrections || undefined,
           },
         });
+
+        userMessageId = userMessage.id;
+        assistantMessageId = assistantMessage.id;
 
         await tx.conversation.update({
           where: { id: conversationId },
@@ -161,7 +193,13 @@ export async function chatHandler(request: Request) {
       });
     }
 
-    return withCors(successResponse(result));
+    return withCors(
+      successResponse({
+        ...result,
+        userMessageId,
+        assistantMessageId,
+      }),
+    );
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return apiErrorResponse(request, "Unauthorized", 401);

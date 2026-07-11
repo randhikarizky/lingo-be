@@ -27,6 +27,7 @@ const ALLOWED_MIME_TYPES = new Set([
   "audio/mpeg",
   "audio/wav",
   "audio/ogg",
+  "audio/aac",
   "audio/x-m4a",
   "audio/m4a",
   "video/mp4",
@@ -39,6 +40,7 @@ const ALLOWED_EXTENSIONS = new Set([
   ".mp3",
   ".wav",
   ".ogg",
+  ".aac",
 ]);
 
 function normalizeMimeType(mimeType: string) {
