@@ -1,5 +1,7 @@
 import { prisma } from "@/global/database/prisma";
 import { requireAuth } from "@/global/middleware/auth.guard";
+import { extractStorageKeyFromMessage } from "@/features/storage/application/audio-storage.service";
+import { storageService } from "@/features/storage/application/storage.service";
 import { parseUuid } from "@/global/utils/uuid";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
@@ -19,6 +21,9 @@ export async function deleteConversationHandler(
 
     const conversation = await prisma.conversation.findUnique({
       where: { id: parsedId.value },
+      include: {
+        messages: true,
+      },
     });
 
     if (!conversation) {
@@ -27,6 +32,13 @@ export async function deleteConversationHandler(
 
     if (conversation.userId !== auth.userId) {
       return withCors(errorResponse("Forbidden", 403));
+    }
+
+    for (const message of conversation.messages) {
+      const storageKey = extractStorageKeyFromMessage(message);
+      if (storageKey) {
+        await storageService.deleteSafe(storageKey, "delete-conversation");
+      }
     }
 
     await prisma.conversation.delete({

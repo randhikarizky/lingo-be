@@ -1,4 +1,5 @@
 import { voiceService } from "@/features/speech/application/voice.service";
+import { audioStorageService } from "@/features/storage/application/audio-storage.service";
 import {
   assertActiveConversationAccess,
   ConversationAccessError,
@@ -47,9 +48,31 @@ export async function transcribeHandler(request: Request) {
       requestId,
     });
 
+    let storedAudio:
+      | Awaited<ReturnType<typeof audioStorageService.uploadUserVoice>>
+      | undefined;
+
+    if (parsed.conversationId) {
+      try {
+        storedAudio = await audioStorageService.uploadUserVoice({
+          conversationId: parsed.conversationId,
+          audio: Buffer.from(parsed.audio.buffer),
+          mimeType: parsed.audio.mimeType,
+          fileName: parsed.audio.fileName,
+          requestId,
+        });
+      } catch (error) {
+        logWarn(requestId, "speech.transcribe.storageFailed", {
+          conversationId: parsed.conversationId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
     logInfo(requestId, "speech.transcribe.response", {
       mock: result.mock,
       textLength: result.text.length,
+      stored: Boolean(storedAudio),
     });
 
     await usageService.recordUsage({
@@ -72,6 +95,10 @@ export async function transcribeHandler(request: Request) {
           message: result.mock
             ? "STT mock — gunakan MOCK_VOICE=false dan KIE_AI_API_KEY untuk provider real."
             : "Transkripsi berhasil",
+          audioUrl: storedAudio?.url,
+          mimeType: storedAudio?.mimeType,
+          size: storedAudio?.size,
+          audioKey: storedAudio?.key,
         }),
         requestId,
       ),

@@ -29,6 +29,7 @@ export function isMockStorageEnabled() {
   return (
     isPlaceholder(process.env.AWS_ACCESS_KEY_ID) ||
     isPlaceholder(process.env.AWS_SECRET_ACCESS_KEY) ||
+    isPlaceholder(process.env.AWS_BUCKET) ||
     isPlaceholder(process.env.AWS_S3_BUCKET)
   );
 }
