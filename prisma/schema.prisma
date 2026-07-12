@@ -22,6 +22,7 @@ model User {
   progress      UserProgress[]
   userPlan      UserPlan?
   usageLogs     UsageLog[]
+  transactions  PaymentTransaction[]
 
   @@map("users")
 }
@@ -115,6 +116,76 @@ enum UsageType {
   CHAT
   TTS
   STT
+}
+
+enum TransactionStatus {
+  CREATED
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  CANCELLED
+}
+
+model PaymentTransaction {
+  id                String            @id @default(cuid())
+  invoiceNumber     String            @unique
+  userId            String
+  planId            PlanType
+  billingProductId  String
+  durationMonths    Int
+  provider          String
+  providerReference String?
+  amount            Int
+  currency          String            @default("IDR")
+  status            TransactionStatus @default(CREATED)
+  paymentMethod     String?
+  expiredAt         DateTime?
+  paidAt            DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoice PaymentInvoice?
+
+  @@index([userId, createdAt])
+  @@index([providerReference])
+  @@map("payment_transactions")
+}
+
+model PaymentInvoice {
+  id            String        @id @default(cuid())
+  transactionId String        @unique
+  invoiceNumber String        @unique
+  amount        Int
+  currency      String        @default("IDR")
+  status        InvoiceStatus @default(DRAFT)
+  issuedAt      DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  transaction PaymentTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@map("payment_invoices")
+}
+
+model PaymentWebhook {
+  id         String   @id @default(cuid())
+  provider   String
+  payload    Json
+  signature  String?
+  verified   Boolean  @default(false)
+  receivedAt DateTime @default(now())
+
+  @@index([provider, receivedAt])
+  @@map("payment_webhooks")
 }
 
 model UserPlan {
