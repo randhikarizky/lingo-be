@@ -53,26 +53,18 @@ const RESTAURANT_OBJECTIVES: MissionObjectiveDefinition[] = [
     id: "ask-special",
     label: "Ask Today's Special",
     goal: "Cari tahu menu spesial hari ini.",
-    tips: [
-      "Pelayan biasanya mengetahui menu yang sedang direkomendasikan.",
-    ],
+    tips: ["Pelayan biasanya mengetahui menu yang sedang direkomendasikan."],
     difficultyStars: 2,
     detectionPatterns: [
       /\b(special|recommend|today'?s|dish of the day)\b/i,
       /\b(apa menu|menu hari ini|spesial)\b/i,
     ],
     hints: {
-      beginner:
-        "Coba tanyakan kepada pelayan mengenai menu spesial hari ini.",
-      intermediate:
-        "Coba tanyakan waiter mengenai today's special menu.",
-      advanced:
-        "Try asking the waiter about today's special dish.",
+      beginner: "Coba tanyakan kepada pelayan mengenai menu spesial hari ini.",
+      intermediate: "Coba tanyakan waiter mengenai today's special menu.",
+      advanced: "Try asking the waiter about today's special dish.",
     },
-    examples: [
-      "What is today's special?",
-      "What do you recommend today?",
-    ],
+    examples: ["What is today's special?", "What do you recommend today?"],
   },
   {
     id: "pay-bill",

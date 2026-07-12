@@ -128,10 +128,11 @@ export async function getAssistanceHandler(
       conversation.scenarioType,
       syncedState.objectiveProgress,
     );
-    const activeObjective = adaptiveLearningService.getActiveObjectiveDefinition(
-      conversation.scenarioType,
-      syncedState.objectiveProgress,
-    );
+    const activeObjective =
+      adaptiveLearningService.getActiveObjectiveDefinition(
+        conversation.scenarioType,
+        syncedState.objectiveProgress,
+      );
 
     return withCors(
       successResponse({

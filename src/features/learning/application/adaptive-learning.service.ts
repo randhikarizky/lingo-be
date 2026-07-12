@@ -42,8 +42,7 @@ export function parseAssistanceState(value: unknown): AssistanceState {
   const raw = value as Partial<AssistanceState>;
   return {
     hintCount: typeof raw.hintCount === "number" ? raw.hintCount : 0,
-    lastHintAt:
-      typeof raw.lastHintAt === "string" ? raw.lastHintAt : null,
+    lastHintAt: typeof raw.lastHintAt === "string" ? raw.lastHintAt : null,
     maxLevelUsed:
       raw.maxLevelUsed === "hint" ||
       raw.maxLevelUsed === "example" ||
@@ -73,7 +72,10 @@ export class AdaptiveLearningService {
       return { allowed: true, waitSeconds: 0 };
     }
 
-    const cooldownIndex = Math.min(state.hintCount, COOLDOWN_SECONDS.length - 1);
+    const cooldownIndex = Math.min(
+      state.hintCount,
+      COOLDOWN_SECONDS.length - 1,
+    );
     const requiredWait = COOLDOWN_SECONDS[cooldownIndex];
 
     if (!state.lastHintAt) {
@@ -141,7 +143,10 @@ export class AdaptiveLearningService {
     }));
   }
 
-  getActiveObjectiveDefinition(scenarioType: string, progress: Record<string, boolean>) {
+  getActiveObjectiveDefinition(
+    scenarioType: string,
+    progress: Record<string, boolean>,
+  ) {
     const definitions = getMissionObjectiveDefinitions(scenarioType);
     return definitions.find((definition) => !progress[definition.id]) ?? null;
   }
@@ -347,8 +352,7 @@ export class AdaptiveLearningService {
       return {
         level: "independent" as const,
         label: "Penyelesaian Mandiri",
-        description:
-          "Kamu menyelesaikan seluruh misi tanpa bantuan apa pun.",
+        description: "Kamu menyelesaikan seluruh misi tanpa bantuan apa pun.",
         emoji: "🎉",
       };
     }

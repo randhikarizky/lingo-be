@@ -70,10 +70,11 @@ export async function detailConversationHandler(
       conversation.scenarioType,
       syncedAssistance.objectiveProgress,
     );
-    const activeObjective = adaptiveLearningService.getActiveObjectiveDefinition(
-      conversation.scenarioType,
-      syncedAssistance.objectiveProgress,
-    );
+    const activeObjective =
+      adaptiveLearningService.getActiveObjectiveDefinition(
+        conversation.scenarioType,
+        syncedAssistance.objectiveProgress,
+      );
     const assistanceSummary =
       adaptiveLearningService.getAssistanceSummary(syncedAssistance);
 

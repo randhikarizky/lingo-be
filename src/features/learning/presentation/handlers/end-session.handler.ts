@@ -62,7 +62,9 @@ export async function endSessionHandler(
         typeof conversation.metrics === "object" && conversation.metrics
           ? (conversation.metrics as Record<string, unknown>)
           : {};
-      const assistanceState = parseAssistanceState(conversation.assistanceState);
+      const assistanceState = parseAssistanceState(
+        conversation.assistanceState,
+      );
 
       return withCors(
         successResponse({
@@ -81,7 +83,8 @@ export async function endSessionHandler(
             hintCount: assistanceState.hintCount,
             assistanceSummary:
               adaptiveLearningService.getAssistanceSummary(assistanceState),
-            xpMultiplier: adaptiveLearningService.getXpMultiplier(assistanceState),
+            xpMultiplier:
+              adaptiveLearningService.getXpMultiplier(assistanceState),
           },
           sessionGoals: conversation.sessionGoals,
         }),
@@ -99,7 +102,8 @@ export async function endSessionHandler(
     );
     const assistanceSummary =
       adaptiveLearningService.getAssistanceSummary(syncedAssistance);
-    const xpMultiplier = adaptiveLearningService.getXpMultiplier(syncedAssistance);
+    const xpMultiplier =
+      adaptiveLearningService.getXpMultiplier(syncedAssistance);
 
     if (syncedAssistance.hintCount === 0) {
       logAssistanceAnalyticsEvent("mission_completed_without_hint", {

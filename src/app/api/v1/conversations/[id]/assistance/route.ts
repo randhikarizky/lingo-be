@@ -1,4 +1,7 @@
-import { assistanceHandler, getAssistanceHandler } from "@/features/learning/presentation/handlers/assistance.handler";
+import {
+  assistanceHandler,
+  getAssistanceHandler,
+} from "@/features/learning/presentation/handlers/assistance.handler";
 import { corsPreflightResponse } from "@/global/utils/cors";
 import { wrapDynamicHandler } from "@/global/utils/route-handler";
 
