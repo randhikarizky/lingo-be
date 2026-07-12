@@ -1,4 +1,4 @@
-import type { PlanStatus, PlanType, UsageType } from "@prisma/client";
+import type { PlanStatus, PlanType } from "@prisma/client";
 
 import { prisma } from "@/global/database/prisma";
 import {
@@ -63,8 +63,24 @@ export class PlanService {
       },
     });
   }
+
+  async activatePaidPlan(
+    userId: string,
+    targetPlan: PlanType,
+    expiredAt: Date | null,
+  ) {
+    await this.ensureUserPlan(userId);
+
+    return prisma.userPlan.update({
+      where: { userId },
+      data: {
+        plan: targetPlan,
+        status: "ACTIVE",
+        startedAt: new Date(),
+        expiredAt,
+      },
+    });
+  }
 }
 
 export const planService = new PlanService();
-
-export type { UsageType };

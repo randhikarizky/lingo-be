@@ -1,4 +1,6 @@
 import { costAnalyticsService } from "@/features/admin/application/cost-analytics.service";
+import { billingMetricsService } from "@/features/billing/application/billing-metrics.service";
+import { billingRetryQueue } from "@/features/billing/application/billing-retry-queue.service";
 import { errorResponse, successResponse } from "@/global/utils/response";
 import { withCors } from "@/global/utils/cors";
 
@@ -31,9 +33,13 @@ export async function adminMetricsHandler(request: Request) {
   }
 
   const days = parseDaysParam(request);
-  const report = await costAnalyticsService.getCostReview(days);
+  const [report, billing, retryQueueSize] = await Promise.all([
+    costAnalyticsService.getCostReview(days),
+    billingMetricsService.getSummary(),
+    Promise.resolve(billingRetryQueue.size()),
+  ]);
 
-  return withCors(successResponse(report));
+  return withCors(successResponse({ ...report, billing, retryQueueSize }));
 }
 
 export async function adminCostReviewHandler(request: Request) {

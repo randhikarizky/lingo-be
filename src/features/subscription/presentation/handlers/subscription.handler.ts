@@ -63,6 +63,17 @@ const upgradeSchema = z.object({
 export async function subscriptionUpgradeHandler(request: Request) {
   try {
     const auth = await requireAuth();
+    const allowDirectUpgrade = process.env.ALLOW_DIRECT_UPGRADE === "true";
+
+    if (!allowDirectUpgrade) {
+      return withCors(
+        errorResponse(
+          "Upgrade langsung dinonaktifkan. Silakan lakukan pembayaran melalui halaman Pricing.",
+          403,
+        ),
+      );
+    }
+
     const body = await request.json();
     const parsed = upgradeSchema.safeParse(body);
 
