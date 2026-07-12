@@ -125,6 +125,7 @@ enum TransactionStatus {
   FAILED
   EXPIRED
   REFUNDED
+  CANCELLED
 }
 
 enum InvoiceStatus {
@@ -147,6 +148,7 @@ model PaymentTransaction {
   currency          String            @default("IDR")
   status            TransactionStatus @default(CREATED)
   paymentMethod     String?
+  paymentUrl        String?
   expiredAt         DateTime?
   paidAt            DateTime?
   createdAt         DateTime          @default(now())
@@ -186,6 +188,20 @@ model PaymentWebhook {
 
   @@index([provider, receivedAt])
   @@map("payment_webhooks")
+}
+
+model PaymentAuditLog {
+  id            String   @id @default(cuid())
+  transactionId String
+  userId        String
+  action        String
+  reason        String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  @@index([transactionId])
+  @@index([userId, createdAt])
+  @@map("payment_audit_logs")
 }
 
 model UserPlan {

@@ -10,17 +10,30 @@ export class InvoiceService {
     const datePart = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
     const prefix = `INV-${datePart}`;
 
-    const latest = await prisma.paymentInvoice.findFirst({
-      where: { invoiceNumber: { startsWith: prefix } },
-      orderBy: { createdAt: "desc" },
-      select: { invoiceNumber: true },
-    });
+    const [latestInvoice, latestTransaction] = await Promise.all([
+      prisma.paymentInvoice.findFirst({
+        where: { invoiceNumber: { startsWith: prefix } },
+        orderBy: { invoiceNumber: "desc" },
+        select: { invoiceNumber: true },
+      }),
+      prisma.paymentTransaction.findFirst({
+        where: { invoiceNumber: { startsWith: prefix } },
+        orderBy: { invoiceNumber: "desc" },
+        select: { invoiceNumber: true },
+      }),
+    ]);
 
-    const sequence = latest
-      ? Number(latest.invoiceNumber.split("-").pop() || "0") + 1
-      : 1;
+    const candidates = [
+      latestInvoice?.invoiceNumber,
+      latestTransaction?.invoiceNumber,
+    ].filter((value): value is string => Boolean(value));
 
-    return `${prefix}-${String(sequence).padStart(4, "0")}`;
+    const maxSequence = candidates.reduce((max, invoiceNumber) => {
+      const sequence = Number(invoiceNumber.split("-").pop() || "0");
+      return Number.isFinite(sequence) ? Math.max(max, sequence) : max;
+    }, 0);
+
+    return `${prefix}-${String(maxSequence + 1).padStart(4, "0")}`;
   }
 
   async createDraftInvoice(input: {
@@ -44,6 +57,13 @@ export class InvoiceService {
     return prisma.paymentInvoice.updateMany({
       where: { transactionId },
       data: { status: "PAID" },
+    });
+  }
+
+  async markCancelled(transactionId: string) {
+    return prisma.paymentInvoice.updateMany({
+      where: { transactionId },
+      data: { status: "CANCELLED" },
     });
   }
 }

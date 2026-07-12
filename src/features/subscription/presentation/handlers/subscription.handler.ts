@@ -57,7 +57,7 @@ export async function subscriptionMeHandler() {
 }
 
 const upgradeSchema = z.object({
-  plan: z.enum(["STARTER", "PRO", "LIFETIME"]),
+  plan: z.enum(["PRO", "LIFETIME"]),
 });
 
 export async function subscriptionUpgradeHandler(request: Request) {
