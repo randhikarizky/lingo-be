@@ -3,6 +3,7 @@ export type BillingAnalyticsEvent =
   | "payment_success"
   | "payment_failed"
   | "payment_expired"
+  | "payment_cancelled"
   | "subscription_activated";
 
 export function logBillingAnalyticsEvent(

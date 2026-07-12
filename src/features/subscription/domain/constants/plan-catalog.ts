@@ -32,7 +32,7 @@ export const PLAN_CATALOG: Record<PlanId, PlanDefinition> = {
   STARTER: {
     id: "STARTER",
     label: "Starter",
-    description: "Untuk belajar rutin dengan akses skenario dan tutor lengkap.",
+    description: "Paket legacy — tidak lagi ditawarkan untuk pengguna baru.",
     priceLabel: "Rp99rb/bulan",
     speakingMinutesPerDay: 60,
     aiRepliesPerDay: 300,
@@ -41,7 +41,6 @@ export const PLAN_CATALOG: Record<PlanId, PlanDefinition> = {
     tutors: "all",
     sessionSummary: true,
     priorityProcessing: false,
-    badge: "Populer",
   },
   PRO: {
     id: "PRO",
@@ -56,6 +55,7 @@ export const PLAN_CATALOG: Record<PlanId, PlanDefinition> = {
     tutors: "all",
     sessionSummary: true,
     priorityProcessing: true,
+    badge: "Populer",
   },
   LIFETIME: {
     id: "LIFETIME",
@@ -74,6 +74,8 @@ export const PLAN_CATALOG: Record<PlanId, PlanDefinition> = {
 };
 
 export const PLAN_ORDER: PlanId[] = ["FREE", "STARTER", "PRO", "LIFETIME"];
+
+export const PUBLIC_PLAN_ORDER: PlanId[] = ["FREE", "PRO", "LIFETIME"];
 
 export function getPlanDefinition(plan: PlanId): PlanDefinition {
   return PLAN_CATALOG[plan];
@@ -104,27 +106,27 @@ export function planIncludesTutor(plan: PlanId, characterId: string) {
 }
 
 export function getMinimumPlanForScenario(scenarioId: string): PlanId {
-  for (const planId of PLAN_ORDER) {
+  for (const planId of PUBLIC_PLAN_ORDER) {
     if (planIncludesScenario(planId, scenarioId)) {
       return planId;
     }
   }
 
-  return "STARTER";
+  return "PRO";
 }
 
 export function getMinimumPlanForTutor(characterId: string): PlanId {
-  for (const planId of PLAN_ORDER) {
+  for (const planId of PUBLIC_PLAN_ORDER) {
     if (planIncludesTutor(planId, characterId)) {
       return planId;
     }
   }
 
-  return "STARTER";
+  return "PRO";
 }
 
 export function listPublicPlans() {
-  return PLAN_ORDER.map((id) => {
+  return PUBLIC_PLAN_ORDER.map((id) => {
     const plan = PLAN_CATALOG[id];
 
     return {

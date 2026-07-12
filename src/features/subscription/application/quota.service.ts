@@ -60,7 +60,7 @@ export class QuotaService {
 
     if (snapshot.usage.aiReplies >= limit) {
       throw new QuotaExceededError(
-        "Kuota latihan hari ini telah habis. Upgrade ke Starter untuk melanjutkan belajar tanpa batasan yang mengganggu.",
+        "Kuota latihan hari ini telah habis. Upgrade ke Pro untuk melanjutkan belajar tanpa batasan yang mengganggu.",
         "aiReplies",
         snapshot.usage.aiReplies,
         limit,
@@ -80,7 +80,7 @@ export class QuotaService {
 
     if (snapshot.usage.speakingMinutes + minutes > limit) {
       throw new QuotaExceededError(
-        "Kuota speaking hari ini telah habis. Upgrade ke Starter untuk melanjutkan latihan suara.",
+        "Kuota speaking hari ini telah habis. Upgrade ke Pro untuk melanjutkan latihan suara.",
         "speakingMinutes",
         snapshot.usage.speakingMinutes,
         limit,
