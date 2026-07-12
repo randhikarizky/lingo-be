@@ -72,7 +72,11 @@ export async function synthesizeHandler(request: Request) {
     if (await storageService.exists(cacheKey)) {
       const audioUrl = process.env.AWS_PUBLIC_URL?.trim()
         ? storageService.getPublicUrl(cacheKey)
-        : await storageService.getSignedUrl(cacheKey, 60 * 60 * 24 * 7, requestId);
+        : await storageService.getSignedUrl(
+            cacheKey,
+            60 * 60 * 24 * 7,
+            requestId,
+          );
 
       if (parsed.data.messageId) {
         try {

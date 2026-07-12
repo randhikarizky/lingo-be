@@ -40,7 +40,7 @@ export class PromptBuilderService {
       "1. Do NOT answer the off-topic question (no numbers, no facts, no personal answers).",
       "2. Politely refuse in Indonesian in 1 short sentence.",
       "3. Immediately redirect to the scenario with ONE English practice question.",
-      "Example refusal: \"Saya hanya bisa bantu latihan Inggris untuk skenario ini.\" then ask a scenario question in English.",
+      'Example refusal: "Saya hanya bisa bantu latihan Inggris untuk skenario ini." then ask a scenario question in English.',
       "",
       `Learning language: ${input.language || "English"}.`,
       `Scenario: ${scenario.label} (${scenario.category}).`,

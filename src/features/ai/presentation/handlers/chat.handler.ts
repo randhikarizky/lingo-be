@@ -88,7 +88,8 @@ export async function chatHandler(request: Request) {
       language: conversation.language,
     };
 
-    const systemPrompt = learningEngineService.buildSystemPrompt(sessionMetadata);
+    const systemPrompt =
+      learningEngineService.buildSystemPrompt(sessionMetadata);
 
     const resolvedModel =
       model ?? learningEngineService.resolveModel(conversation.personality);

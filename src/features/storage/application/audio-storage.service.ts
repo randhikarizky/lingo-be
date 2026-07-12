@@ -54,14 +54,20 @@ export function extractStorageKeyFromMessage(message: {
   const localPrefix = "/api/v1/storage/local/";
   const localIndex = message.audioUrl.indexOf(localPrefix);
   if (localIndex >= 0) {
-    return decodeURIComponent(message.audioUrl.slice(localIndex + localPrefix.length));
+    return decodeURIComponent(
+      message.audioUrl.slice(localIndex + localPrefix.length),
+    );
   }
 
   return null;
 }
 
 export class AudioStorageService {
-  buildUserVoiceKey(conversationId: string, fileName?: string, mimeType?: string) {
+  buildUserVoiceKey(
+    conversationId: string,
+    fileName?: string,
+    mimeType?: string,
+  ) {
     const ext =
       path.extname(fileName ?? "") ||
       extensionFromMimeType(mimeType ?? "audio/webm");
@@ -120,7 +126,11 @@ export class AudioStorageService {
     if (await storageService.exists(key)) {
       const url = process.env.AWS_PUBLIC_URL?.trim()
         ? storageService.getPublicUrl(key)
-        : await storageService.getSignedUrl(key, 60 * 60 * 24 * 7, params.requestId);
+        : await storageService.getSignedUrl(
+            key,
+            60 * 60 * 24 * 7,
+            params.requestId,
+          );
 
       return {
         cached: true,

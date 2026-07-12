@@ -3,6 +3,11 @@ import { requireAuth } from "@/global/middleware/auth.guard";
 import { goalEvaluatorService } from "@/features/learning/application/goal-evaluator.service";
 import { learningEngineService } from "@/features/learning/application/learning-engine.service";
 import { sessionSummaryService } from "@/features/learning/application/session-summary.service";
+import {
+  adaptiveLearningService,
+  parseAssistanceState,
+} from "@/features/learning/application/adaptive-learning.service";
+import { logAssistanceAnalyticsEvent } from "@/features/learning/application/adaptive-learning.analytics";
 import type { SessionGoal } from "@/features/learning/domain/types/learning-session.types";
 import { parseUuid } from "@/global/utils/uuid";
 import { getScenario } from "@/features/learning/domain/constants/scenarios";
@@ -57,6 +62,9 @@ export async function endSessionHandler(
         typeof conversation.metrics === "object" && conversation.metrics
           ? (conversation.metrics as Record<string, unknown>)
           : {};
+      const assistanceState = parseAssistanceState(
+        conversation.assistanceState,
+      );
 
       return withCors(
         successResponse({
@@ -71,6 +79,12 @@ export async function endSessionHandler(
             guardRedirectCount:
               (storedMetrics.guardRedirectCount as number | undefined) ??
               conversation.guardRedirectCount,
+            assistanceLevel: assistanceState.maxLevelUsed,
+            hintCount: assistanceState.hintCount,
+            assistanceSummary:
+              adaptiveLearningService.getAssistanceSummary(assistanceState),
+            xpMultiplier:
+              adaptiveLearningService.getXpMultiplier(assistanceState),
           },
           sessionGoals: conversation.sessionGoals,
         }),
@@ -80,10 +94,31 @@ export async function endSessionHandler(
     const baseMetrics = learningEngineService.computeMetrics(
       conversation.messages,
     );
+    const assistanceState = parseAssistanceState(conversation.assistanceState);
+    const syncedAssistance = adaptiveLearningService.applyUserMessage(
+      assistanceState,
+      conversation.scenarioType,
+      conversation.messages,
+    );
+    const assistanceSummary =
+      adaptiveLearningService.getAssistanceSummary(syncedAssistance);
+    const xpMultiplier =
+      adaptiveLearningService.getXpMultiplier(syncedAssistance);
+
+    if (syncedAssistance.hintCount === 0) {
+      logAssistanceAnalyticsEvent("mission_completed_without_hint", {
+        conversationId: parsedId.value,
+      });
+    }
+
     const metrics = {
       ...baseMetrics,
       focusScore: conversation.focusScore,
       guardRedirectCount: conversation.guardRedirectCount,
+      assistanceLevel: syncedAssistance.maxLevelUsed,
+      hintCount: syncedAssistance.hintCount,
+      assistanceSummary,
+      xpMultiplier,
     };
     const scenario = getScenario(conversation.scenarioType);
     const storedGoals = parseStoredGoals(conversation.sessionGoals);
@@ -110,6 +145,7 @@ export async function endSessionHandler(
         summary,
         metrics,
         sessionGoals,
+        assistanceState: syncedAssistance,
         updatedAt: new Date(),
       },
     });
