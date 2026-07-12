@@ -3,6 +3,7 @@ import { prisma } from "@/global/database/prisma";
 import { requireAuth } from "@/global/middleware/auth.guard";
 import { learningEngineService } from "@/features/learning/application/learning-engine.service";
 import { goalEvaluatorService } from "@/features/learning/application/goal-evaluator.service";
+import { adaptiveLearningService } from "@/features/learning/application/adaptive-learning.service";
 import { planService } from "@/features/subscription/application/plan.service";
 import { quotaService } from "@/features/subscription/application/quota.service";
 import { mapSubscriptionErrorResponse } from "@/features/subscription/presentation/utils/subscription-response";
@@ -64,6 +65,7 @@ export async function createConversationHandler(request: Request) {
     const defaultTitle = `${scenario.label} with ${displayName}`;
 
     const sessionGoals = goalEvaluatorService.buildGoals(difficulty);
+    const assistanceState = adaptiveLearningService.createInitialState();
 
     const conversation = await prisma.conversation.create({
       data: {
@@ -77,6 +79,7 @@ export async function createConversationHandler(request: Request) {
         title: title || defaultTitle,
         status: "ACTIVE",
         sessionGoals,
+        assistanceState,
       },
     });
 

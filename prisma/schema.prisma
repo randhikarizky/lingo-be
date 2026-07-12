@@ -39,6 +39,7 @@ model Conversation {
   summary      Json?
   metrics      Json?
   sessionGoals       Json?
+  assistanceState    Json?
   focusScore         Int                @default(100)
   guardRedirectCount Int                @default(0)
   status             ConversationStatus @default(ACTIVE)

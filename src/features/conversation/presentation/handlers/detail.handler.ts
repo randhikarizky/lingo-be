@@ -1,6 +1,10 @@
 import { prisma } from "@/global/database/prisma";
 import { requireAuth } from "@/global/middleware/auth.guard";
 import { goalEvaluatorService } from "@/features/learning/application/goal-evaluator.service";
+import {
+  adaptiveLearningService,
+  parseAssistanceState,
+} from "@/features/learning/application/adaptive-learning.service";
 import type { SessionGoal } from "@/features/learning/domain/types/learning-session.types";
 import { getScenario } from "@/features/learning/domain/constants/scenarios";
 import { parseUuid } from "@/global/utils/uuid";
@@ -56,6 +60,23 @@ export async function detailConversationHandler(
             storedGoals,
           );
 
+    const assistanceState = parseAssistanceState(conversation.assistanceState);
+    const syncedAssistance = adaptiveLearningService.applyUserMessage(
+      assistanceState,
+      conversation.scenarioType,
+      conversation.messages,
+    );
+    const missionObjectives = adaptiveLearningService.buildMissionObjectives(
+      conversation.scenarioType,
+      syncedAssistance.objectiveProgress,
+    );
+    const activeObjective = adaptiveLearningService.getActiveObjectiveDefinition(
+      conversation.scenarioType,
+      syncedAssistance.objectiveProgress,
+    );
+    const assistanceSummary =
+      adaptiveLearningService.getAssistanceSummary(syncedAssistance);
+
     const responseData = {
       id: conversation.id,
       title: conversation.title,
@@ -71,6 +92,11 @@ export async function detailConversationHandler(
       summary: conversation.summary,
       metrics: conversation.metrics,
       sessionGoals,
+      missionObjectives,
+      activeObjectiveId: activeObjective?.id ?? null,
+      assistanceLevel: syncedAssistance.maxLevelUsed,
+      hintCount: syncedAssistance.hintCount,
+      assistanceSummary,
       messages: conversation.messages.map((m) => ({
         id: m.id,
         role: m.role,
