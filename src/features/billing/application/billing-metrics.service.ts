@@ -18,7 +18,8 @@ export class BillingMetricsService {
       (sum, item) => sum + item.amount,
       0,
     );
-    const payingUsers = new Set(paidTransactions.map((item) => item.userId)).size;
+    const payingUsers = new Set(paidTransactions.map((item) => item.userId))
+      .size;
     const totalUsers = await prisma.user.count();
 
     return {

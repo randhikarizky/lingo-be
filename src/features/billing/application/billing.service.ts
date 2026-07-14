@@ -247,7 +247,10 @@ export class BillingService {
     });
 
     if (!verification.verified) {
-      billingRetryQueue.enqueue(providerId, payload as unknown as Record<string, unknown>);
+      billingRetryQueue.enqueue(
+        providerId,
+        payload as unknown as Record<string, unknown>,
+      );
       return { processed: false, reason: "invalid_signature" as const };
     }
 
@@ -295,7 +298,10 @@ export class BillingService {
       return { processed: true, reason: "failed" as const };
     }
 
-    billingRetryQueue.enqueue(providerId, payload as unknown as Record<string, unknown>);
+    billingRetryQueue.enqueue(
+      providerId,
+      payload as unknown as Record<string, unknown>,
+    );
     return { processed: false, reason: "ignored" as const };
   }
 
@@ -480,14 +486,19 @@ export class BillingService {
     }
 
     if (detail.status !== "PAID") {
-      throw new Error("Invoice hanya tersedia untuk pembayaran yang sudah lunas");
+      throw new Error(
+        "Invoice hanya tersedia untuk pembayaran yang sudah lunas",
+      );
     }
 
-    const createdLabel = new Date(detail.createdAt).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    const createdLabel = new Date(detail.createdAt).toLocaleDateString(
+      "id-ID",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      },
+    );
     const paidLabel = detail.paidAt
       ? new Date(detail.paidAt).toLocaleDateString("id-ID", {
           day: "numeric",

@@ -28,9 +28,7 @@ export async function billingPaymentMethodsHandler(request: Request) {
     return withCors(successResponse({ methods }));
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : "Gagal memuat metode pembayaran";
+      error instanceof Error ? error.message : "Gagal memuat metode pembayaran";
     return withCors(errorResponse(message, 500));
   }
 }

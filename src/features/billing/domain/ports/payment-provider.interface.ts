@@ -29,11 +29,15 @@ export type PaymentMethodOption = {
 export interface PaymentProvider {
   readonly id: string;
 
-  createPayment(input: ProviderCreatePaymentInput): Promise<CreatePaymentResult>;
+  createPayment(
+    input: ProviderCreatePaymentInput,
+  ): Promise<CreatePaymentResult>;
 
   getPaymentMethods?(amount: number): Promise<PaymentMethodOption[]>;
 
-  getTransaction(merchantOrderId: string): Promise<ProviderTransactionStatus | null>;
+  getTransaction(
+    merchantOrderId: string,
+  ): Promise<ProviderTransactionStatus | null>;
 
   verifyWebhook(payload: PaymentWebhookPayload): VerifiedWebhookResult;
 

@@ -9,8 +9,7 @@ function buildProduct(
   durationLabel: string,
 ): BillingProduct {
   const listPrice = MONTHLY_BASE_PRICE * durationMonths;
-  const discountPercent =
-    durationMonths > 1 ? MULTI_MONTH_DISCOUNT_PERCENT : 0;
+  const discountPercent = durationMonths > 1 ? MULTI_MONTH_DISCOUNT_PERCENT : 0;
   const finalPrice = Math.round(listPrice * (1 - discountPercent / 100));
 
   return {
