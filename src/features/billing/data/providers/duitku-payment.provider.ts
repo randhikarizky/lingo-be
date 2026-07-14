@@ -71,7 +71,10 @@ export class DuitkuPaymentProvider implements PaymentProvider {
     }
 
     if (code === "01") {
-      return { status: "PENDING" as const, providerReference: result.reference };
+      return {
+        status: "PENDING" as const,
+        providerReference: result.reference,
+      };
     }
 
     return { status: "FAILED" as const, providerReference: result.reference };

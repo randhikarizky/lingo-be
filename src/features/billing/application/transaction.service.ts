@@ -53,7 +53,8 @@ export class TransactionService {
 
     return {
       ...updated,
-      paymentUrl: extras?.paymentUrl ?? (await this.getPaymentUrl(transactionId)),
+      paymentUrl:
+        extras?.paymentUrl ?? (await this.getPaymentUrl(transactionId)),
     };
   }
 
@@ -84,7 +85,9 @@ export class TransactionService {
     }
 
     const ids = transactions.map((transaction) => transaction.id);
-    const rows = await prisma.$queryRaw<{ id: string; paymentUrl: string | null }[]>`
+    const rows = await prisma.$queryRaw<
+      { id: string; paymentUrl: string | null }[]
+    >`
       SELECT "id", "paymentUrl"
       FROM "payment_transactions"
       WHERE "id" IN (${Prisma.join(ids)})

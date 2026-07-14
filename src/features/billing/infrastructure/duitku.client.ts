@@ -42,10 +42,7 @@ export function createDuitkuSignature(
   stringToSign: string,
   apiKey: string,
 ): string {
-  return crypto
-    .createHmac("sha256", apiKey)
-    .update(stringToSign)
-    .digest("hex");
+  return crypto.createHmac("sha256", apiKey).update(stringToSign).digest("hex");
 }
 
 export function verifyDuitkuWebhookSignature(input: {
@@ -148,26 +145,23 @@ export class DuitkuClient {
       this.config.apiKey,
     );
 
-    const response = await fetch(
-      `${this.apiBase}/api/merchant/v2/inquiry`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          merchantCode: this.config.merchantCode,
-          paymentAmount: input.paymentAmount,
-          paymentMethod: input.paymentMethod ?? "",
-          merchantOrderId: input.merchantOrderId,
-          productDetails: input.productDetails,
-          email: input.email,
-          customerVaName: input.customerVaName,
-          callbackUrl: this.config.callbackUrl,
-          returnUrl: this.config.returnUrl,
-          signature,
-          expiryPeriod: input.expiryPeriodMinutes ?? 60,
-        }),
-      },
-    );
+    const response = await fetch(`${this.apiBase}/api/merchant/v2/inquiry`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        merchantCode: this.config.merchantCode,
+        paymentAmount: input.paymentAmount,
+        paymentMethod: input.paymentMethod ?? "",
+        merchantOrderId: input.merchantOrderId,
+        productDetails: input.productDetails,
+        email: input.email,
+        customerVaName: input.customerVaName,
+        callbackUrl: this.config.callbackUrl,
+        returnUrl: this.config.returnUrl,
+        signature,
+        expiryPeriod: input.expiryPeriodMinutes ?? 60,
+      }),
+    });
 
     const data = (await response.json()) as DuitkuInquiryResponse;
 
