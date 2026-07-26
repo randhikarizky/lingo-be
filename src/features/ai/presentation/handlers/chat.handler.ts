@@ -10,7 +10,10 @@ import {
   ConversationAccessError,
 } from "@/features/conversation/application/conversation-access.service";
 import { learningEngineService } from "@/features/learning/application/learning-engine.service";
-import { logConversationGuardEvent } from "@/features/learning/application/conversation-guard.analytics";
+import {
+  logConversationGuardEvent,
+  logConversationGuardFailure,
+} from "@/features/learning/application/conversation-guard.analytics";
 import { conversationGuardService } from "@/features/learning/application/conversation-guard.service";
 import { quotaService } from "@/features/subscription/application/quota.service";
 import { usageService } from "@/features/subscription/application/usage.service";
@@ -99,19 +102,36 @@ export async function chatHandler(request: Request) {
       redirectCount: conversation.guardRedirectCount,
     };
 
-    const guardEvaluation = lastUserMessage
-      ? conversationGuardService.evaluate(
+    let guardEvaluation: ReturnType<
+      typeof conversationGuardService.evaluate
+    > | null = null;
+
+    if (lastUserMessage) {
+      try {
+        guardEvaluation = conversationGuardService.evaluate(
           lastUserMessage.content,
           sessionMetadata,
           guardState,
-        )
-      : null;
+        );
+      } catch (error) {
+        logConversationGuardFailure({
+          userId: auth.userId,
+          conversationId,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Conversation guard classification failed",
+        });
+      }
+    }
 
     const guardResult = guardEvaluation?.result;
     const nextGuardState = guardEvaluation?.nextState ?? guardState;
+    const isGuardRedirect = Boolean(guardResult && !guardResult.allowAI);
 
     if (guardResult) {
       logConversationGuardEvent(guardResult.category, {
+        userId: auth.userId,
         conversationId,
         focusScore: nextGuardState.focusScore,
         redirectCount: nextGuardState.redirectCount,
@@ -119,11 +139,12 @@ export async function chatHandler(request: Request) {
     }
 
     const result =
-      guardResult && !guardResult.allowAI
+      isGuardRedirect && guardResult?.redirectMessage
         ? {
-            content: guardResult.redirectMessage!,
+            content: guardResult.redirectMessage,
             mock: false,
             model: resolvedModel,
+            guard: true as const,
           }
         : await kieAiClient.chatCompletion({
             model: resolvedModel,
@@ -168,6 +189,12 @@ export async function chatHandler(request: Request) {
             role: "ASSISTANT",
             content: result.content,
             correction: corrections || undefined,
+            metadata: isGuardRedirect
+              ? {
+                  guard: true,
+                  category: guardResult?.category ?? "OFF_TOPIC",
+                }
+              : undefined,
           },
         });
 
@@ -185,7 +212,7 @@ export async function chatHandler(request: Request) {
       });
     }
 
-    if (!guardResult || guardResult.allowAI) {
+    if (!isGuardRedirect) {
       await usageService.recordUsage({
         userId: auth.userId,
         type: "CHAT",

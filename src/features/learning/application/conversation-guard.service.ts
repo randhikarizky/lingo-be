@@ -1,3 +1,7 @@
+import {
+  getDifficulty,
+  type DifficultyId,
+} from "@/features/learning/domain/constants/difficulties";
 import { getScenario } from "@/features/learning/domain/constants/scenarios";
 import type { LearningSessionMetadata } from "@/features/learning/domain/types/learning-session.types";
 import type {
@@ -51,6 +55,12 @@ const OFF_TOPIC_PATTERNS = [
   /\b(harga bitcoin|crypto|saham|stock price)\b/i,
   /\b(tell me a joke|ceritakan lelucon|make me laugh)\b/i,
   /\b(resep masakan|recipe for)\b/i,
+  /\b(password|passwordnya|kata sandi)\s+(wifi|wi-fi|internet)\b/i,
+  /\b(apa|what\s+is)\s+(password|passwordnya|kata sandi)\b/i,
+  /\b(warna favorit|favorite color)\b/i,
+  /\b(ceritakan tentang|tell me about)\s+(perang|world war)\b/i,
+  /\b(perang dunia|world war)\b/i,
+  /\b(buatkan|buat|make)\s+(website|situs|aplikasi|app)\b/i,
 ];
 
 const SCENARIO_CONTINUE_PROMPTS: Record<string, string> = {
@@ -68,48 +78,73 @@ const SCENARIO_CONTINUE_PROMPTS: Record<string, string> = {
   pharmacy: "How can I help you with your prescription?",
 };
 
-const REDIRECT_TEMPLATES = [
-  (continuePrompt: string) =>
+const DIFFICULTY_REDIRECT: Record<
+  DifficultyId,
+  (continuePrompt: string) => string
+> = {
+  beginner: (continuePrompt) =>
     [
-      "😊 Pertanyaan yang menarik.",
+      "Aku ingin tetap fokus membantu latihan bahasa.",
       "",
-      "Namun kita sedang fokus latihan.",
-      "",
-      "Let's continue.",
+      "Yuk lanjutkan latihanmu 😊",
       "",
       continuePrompt,
     ].join("\n"),
-  (continuePrompt: string) =>
+  intermediate: (continuePrompt) =>
     [
-      "Agar target sesi tercapai,",
-      "ayo kita lanjutkan percakapan.",
+      "Mari kita kembali ke latihan bahasa.",
+      "",
+      "Coba ajukan pertanyaan dalam bahasa Inggris sesuai skenario saat ini.",
       "",
       continuePrompt,
     ].join("\n"),
-  () =>
+  advanced: (continuePrompt) =>
     [
-      "Let's stay focused on today's mission.",
+      "Let's stay focused on your English practice.",
       "",
-      "Could you answer my previous question?",
+      "Try asking something related to the current conversation.",
+      "",
+      continuePrompt,
     ].join("\n"),
-];
+};
 
-const REPEATED_REDIRECT_TEMPLATE = (continuePrompt: string) =>
-  [
-    "😊 Kita sudah beberapa kali keluar topik.",
-    "",
-    "Agar latihan hari ini selesai,",
-    "ayo kita kembali ke misi.",
-    "",
-    continuePrompt,
-  ].join("\n");
+const REPEATED_REDIRECT_BY_DIFFICULTY: Record<
+  DifficultyId,
+  (continuePrompt: string) => string
+> = {
+  beginner: (continuePrompt) =>
+    [
+      "😊 Kita sudah beberapa kali keluar topik.",
+      "",
+      "Agar latihan hari ini selesai, ayo kita kembali ke misi.",
+      "",
+      continuePrompt,
+    ].join("\n"),
+  intermediate: (continuePrompt) =>
+    [
+      "Kita sudah beberapa kali keluar dari latihan.",
+      "",
+      "Mari fokus kembali ke skenario saat ini.",
+      "",
+      continuePrompt,
+    ].join("\n"),
+  advanced: (continuePrompt) =>
+    [
+      "We've gone off-topic a few times.",
+      "",
+      "Let's get back to your practice session.",
+      "",
+      continuePrompt,
+    ].join("\n"),
+};
+
+function resolveDifficultyId(difficulty: string): DifficultyId {
+  const resolved = getDifficulty(difficulty).id;
+  return resolved;
+}
 
 function normalizeMessage(content: string) {
   return content.trim().replace(/\s+/g, " ");
-}
-
-function pickRandomTemplateIndex() {
-  return Math.floor(Math.random() * REDIRECT_TEMPLATES.length);
 }
 
 export function applyFocusUpdate(
@@ -164,16 +199,16 @@ export class ConversationGuardService {
   buildRedirectMessage(
     metadata: LearningSessionMetadata,
     redirectCount: number,
-    templateIndex = pickRandomTemplateIndex(),
   ) {
     const scenario = getScenario(metadata.scenarioType);
     const continuePrompt = this.resolveContinuePrompt(scenario.id);
+    const difficultyId = resolveDifficultyId(metadata.difficulty);
 
     if (redirectCount >= 3) {
-      return REPEATED_REDIRECT_TEMPLATE(continuePrompt);
+      return REPEATED_REDIRECT_BY_DIFFICULTY[difficultyId](continuePrompt);
     }
 
-    return REDIRECT_TEMPLATES[templateIndex](continuePrompt);
+    return DIFFICULTY_REDIRECT[difficultyId](continuePrompt);
   }
 
   evaluate(
